@@ -47,17 +47,17 @@ const P = {
     ar: { tag: 'آركيد · مشروع ٠٢', h: 'استوديو واجهة', p: 'استوديو صغير بعمّان: مواقع وأنظمة وفيديوهات موشن للمحلات والشركات. الموقع والهوية ونظام العملاء كلهم من شغلي.',
       chips: ['هوية', 'موقع', 'نظام عملاء', 'موشن'], links: [['موقع واجهة', 'wajha-chi.vercel.app', 'https://wajha-chi.vercel.app'], ['إنستغرام', '@wajiha.jo', 'https://www.instagram.com/wajiha.jo']] } },
   folio: { c: '#9b7cff', en: { tag: 'ARCADE · PROJECT 03', h: 'This room', p: 'My portfolio is a game: a pixel version of my real room, drawn pixel by pixel, in English and Arabic. Before this I built a cinematic Next.js portfolio.',
-      chips: ['Canvas', 'Pixel art', 'Web Audio', 'Bilingual'], links: [['Old portfolio code', 'gboody37/cinematic-portfolio', 'https://github.com/gboody37/cinematic-portfolio']] },
+      chips: ['Canvas', 'Pixel art', 'Web Audio', 'Bilingual'], links: [['Old portfolio code', 'Abdulrahman-amoudi/cinematic-portfolio', 'https://github.com/Abdulrahman-amoudi/cinematic-portfolio']] },
     ar: { tag: 'آركيد · مشروع ٠٣', h: 'هاي الغرفة', p: 'البورتفوليو تبعي لعبة: نسخة بكسل من غرفتي الحقيقية، مرسومة بكسل بكسل، بالعربي والإنجليزي. قبلها عملت بورتفوليو سينمائي بـNext.js.',
-      chips: ['Canvas', 'بكسل آرت', 'Web Audio', 'لغتين'], links: [['كود البورتفوليو القديم', 'gboody37/cinematic-portfolio', 'https://github.com/gboody37/cinematic-portfolio']] } },
+      chips: ['Canvas', 'بكسل آرت', 'Web Audio', 'لغتين'], links: [['كود البورتفوليو القديم', 'Abdulrahman-amoudi/cinematic-portfolio', 'https://github.com/Abdulrahman-amoudi/cinematic-portfolio']] } },
   github: { c: '#4caf6a', en: { tag: 'GITHUB CORNER · CODE', h: 'GitHub', p: 'Everything I build ends up here: the study app, client sites and the experiments in between. Pull up a chair and read the code.',
-      chips: ['TypeScript', 'JavaScript', 'Python', 'Next.js', 'Supabase'], links: [['GitHub', 'github.com/gboody37', 'https://github.com/gboody37']] },
+      chips: ['TypeScript', 'JavaScript', 'Python', 'Next.js', 'Supabase'], links: [['GitHub', 'github.com/Abdulrahman-amoudi', 'https://github.com/Abdulrahman-amoudi']] },
     ar: { tag: 'زاوية GITHUB · الكود', h: 'GitHub', p: 'كل إشي ببنيه بوصل هون: تطبيق الدراسة، مواقع العملاء والتجارب اللي بينهم. اسحب كرسي واقرأ الكود.',
-      chips: ['TypeScript', 'JavaScript', 'Python', 'Next.js', 'Supabase'], links: [['GitHub', 'github.com/gboody37', 'https://github.com/gboody37']] } },
+      chips: ['TypeScript', 'JavaScript', 'Python', 'Next.js', 'Supabase'], links: [['GitHub', 'github.com/Abdulrahman-amoudi', 'https://github.com/Abdulrahman-amoudi']] } },
   contact: { c: '#4caf6a', en: { tag: 'PHONE · CONTACT', h: 'Let’s work together', p: 'Need something edited, wired up or built? Message me through the studio.',
-      links: [['Wajha studio', 'wajha-chi.vercel.app', 'https://wajha-chi.vercel.app'], ['Instagram', '@wajiha.jo', 'https://www.instagram.com/wajiha.jo'], ['GitHub', 'gboody37', 'https://github.com/gboody37']] },
+      links: [['Wajha studio', 'wajha-chi.vercel.app', 'https://wajha-chi.vercel.app'], ['Instagram', '@wajiha.jo', 'https://www.instagram.com/wajiha.jo'], ['GitHub', 'Abdulrahman-amoudi', 'https://github.com/Abdulrahman-amoudi']] },
     ar: { tag: 'الجوال · تواصل', h: 'خلينا نشتغل سوا', p: 'بدك مونتاج، شبكة، أو موقع؟ راسلني من خلال الاستوديو.',
-      links: [['استوديو واجهة', 'wajha-chi.vercel.app', 'https://wajha-chi.vercel.app'], ['إنستغرام', '@wajiha.jo', 'https://www.instagram.com/wajiha.jo'], ['GitHub', 'gboody37', 'https://github.com/gboody37']] } },
+      links: [['استوديو واجهة', 'wajha-chi.vercel.app', 'https://wajha-chi.vercel.app'], ['إنستغرام', '@wajiha.jo', 'https://www.instagram.com/wajiha.jo'], ['GitHub', 'Abdulrahman-amoudi', 'https://github.com/Abdulrahman-amoudi']] } },
 };
 const ORDER = ['story', 'edit', 'ai', 'net', 'web', 'vibe', 'wajha', 'folio', 'github', 'contact'];
 const MENU = [
