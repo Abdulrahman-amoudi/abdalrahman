@@ -1,0 +1,129 @@
+<title>Abdalrahman's Room</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Abdalrahman's portfolio: a pixel-art version of his room in Amman. Walk around and click things to learn what he does.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=Silkscreen:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* The game fills the screen; every piece of UI floats on top of it as a pixel panel. */
+:root{
+  color-scheme:dark;
+  --night:#0f1120; --ink:#f4efe3; --muted:#a9a6b8; --panel:#1b1e33; --panel2:#262b45; --edge:#3a4066; --edge2:#0a0b16;
+  --orange:#ff8a2a; --gold:#ffd36a; --green:#4caf6a;
+  --pixel:"Pixelify Sans","Courier New",monospace;
+  --title:"Silkscreen","Pixelify Sans",monospace;
+  --ar:"IBM Plex Sans Arabic","Pixelify Sans",system-ui,sans-serif;
+  /* stepped pixel corners */
+  --notch:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px));
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--night);color:var(--ink);overflow:hidden}
+body{font:16px/1.45 var(--pixel);touch-action:manipulation;-webkit-font-smoothing:none}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.stage{position:fixed;inset:0;display:grid;place-items:center;overflow:hidden;background:#07080f}
+canvas#game{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+.px{background:var(--panel);clip-path:var(--notch);box-shadow:inset 0 0 0 2px var(--edge),inset -4px -4px 0 #10122200,inset 0 -4px 0 rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.06)}
+
+/* profile card, top-left */
+.who{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:max(10px,env(safe-area-inset-left,0px));display:flex;gap:10px;align-items:center;padding:8px 14px 9px 8px;z-index:5;max-width:calc(100vw - 20px)}
+.who canvas{width:44px;height:44px;image-rendering:pixelated;background:#2a2f4c;clip-path:var(--notch);flex:none}
+.who .t{display:flex;flex-direction:column;gap:1px;min-width:0}
+.who b{font:700 14px var(--title);letter-spacing:.06em;color:var(--gold);white-space:nowrap}
+.who span{font-size:13px;color:#d8d4c8;white-space:nowrap}
+.bar{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.bar i{display:block;width:110px;height:6px;background:#0c0e1b;box-shadow:0 0 0 1px #3a4066}
+.bar i em{display:block;height:100%;width:0;background:var(--green);transition:width .4s steps(6)}
+
+/* buttons, top-right */
+.tools{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));display:flex;gap:6px;z-index:5}
+.hbtn{height:36px;min-width:36px;padding:0 11px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;font:600 13px var(--title);letter-spacing:.06em;cursor:pointer}
+.hbtn svg{width:16px;height:16px;shape-rendering:crispEdges;fill:currentColor}
+.hbtn:hover{color:var(--gold);transform:translateY(-1px)}
+.hbtn:active{transform:translateY(1px)}
+.hbtn[aria-pressed="true"]{color:var(--gold);background:#2b2540}
+
+.tip{position:fixed;pointer-events:none;transform:translate(-50%,-100%);font:600 13px var(--pixel);background:var(--ink);color:#1a1d30;padding:2px 7px 3px;white-space:nowrap;clip-path:var(--notch);z-index:4}
+.tip kbd{font:inherit;background:#1a1d30;color:var(--ink);padding:0 4px;margin-right:5px}
+.help{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font:13px var(--pixel);color:#cfcbd9;padding:5px 12px 6px;white-space:nowrap;z-index:5}
+.help kbd{font:inherit;color:var(--ink);background:#2a2f4c;padding:0 4px}
+
+/* touch controls */
+.pad{position:fixed;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));display:none;justify-content:space-between;align-items:flex-end;padding:0 max(14px,env(safe-area-inset-left,0px)) 0 max(14px,env(safe-area-inset-right,0px));z-index:5;pointer-events:none}
+.pad>*{pointer-events:auto}
+.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:3px}
+.dpad button,.abtn{border:0;font:700 15px var(--title);touch-action:none;user-select:none;-webkit-user-select:none;opacity:.92}
+.dpad button:active,.abtn:active{color:var(--gold);transform:translateY(1px)}
+.dpad .u{grid-column:2;grid-row:1}.dpad .l{grid-column:1;grid-row:2}.dpad .r{grid-column:3;grid-row:2}.dpad .d{grid-column:2;grid-row:3}
+.abtns{display:flex;gap:10px;align-items:flex-end}
+.abtn{width:62px;height:62px}
+.abtn.use{background:#c4581e;color:#fff}
+.abtn.run{width:50px;height:50px;font-size:11px}
+@media (hover:none),(max-width:760px){.pad{display:flex}.help{display:none}.toast{bottom:auto;top:calc(76px + env(safe-area-inset-top,0px))}}
+
+/* panels */
+.scrim{position:fixed;inset:0;background:rgba(6,7,16,.62);display:grid;place-items:center;padding:16px;z-index:20;animation:fade .15s steps(3)}
+.card{width:min(560px,100%);max-height:min(82vh,720px);overflow:auto;padding:22px 22px 18px;animation:pop .18s steps(4) both}
+.card[dir="rtl"]{font-family:var(--ar)}
+.card .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.card .tag{font:700 12px var(--title);color:var(--c,var(--orange));letter-spacing:.08em}
+.card h2{margin:6px 0 10px;font:700 30px/1.05 var(--title);letter-spacing:.02em;text-wrap:balance}
+.card[dir="rtl"] h2{font-family:var(--ar);font-weight:600;font-size:28px;line-height:1.25;letter-spacing:0}
+.card p{margin:0 0 12px;color:#dcd8cc;max-width:60ch;font-size:17px}
+.card .x{width:34px;height:34px;flex:none;border:0;background:var(--panel2);font:700 15px var(--title);cursor:pointer;clip-path:var(--notch)}
+.card .x:hover{color:var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 14px}
+.chips span{font-size:14px;padding:2px 9px 3px;background:#2d3352;clip-path:var(--notch)}
+.card[dir="rtl"] .chips span{font-family:var(--ar)}
+.story{list-style:none;margin:6px 0 12px;padding:0;display:flex;flex-direction:column;gap:9px}
+.story li{display:grid;grid-template-columns:58px 1fr;gap:10px;align-items:baseline}
+.story b{font:700 15px var(--title);color:var(--orange)}
+.links{display:flex;flex-direction:column;gap:8px;margin:6px 0 4px}
+.links a{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 12px;background:#2a2f4c;color:var(--ink);text-decoration:none;font-size:16px;clip-path:var(--notch)}
+.links a:hover{background:#353b60;color:var(--gold)}
+.links small{color:var(--muted);font-size:13px}
+.stat{font:700 42px/1 var(--title);color:var(--c,var(--orange))}
+.stat small{display:block;font-size:14px;color:var(--muted);margin-top:4px;font-family:var(--pixel)}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:2px dashed #3a4066;font:700 12px var(--title);letter-spacing:.04em}
+.nav button{border:0;background:none;color:var(--muted);cursor:pointer;padding:4px 0}
+.nav button:hover{color:var(--gold)}
+.menu-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.menu-list button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:11px 12px;border:0;background:#2a2f4c;cursor:pointer;text-align:start;clip-path:var(--notch)}
+.menu-list button:hover{background:#353b60;color:var(--gold)}
+.menu-list button.seen b::after{content:" ✓";color:var(--green)}
+.menu-list b{font-size:16px}
+.menu-list span{font-size:13px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(52px + env(safe-area-inset-bottom,0px));width:max-content;max-width:min(90vw,440px);text-align:center;transform:translateX(-50%);font:600 15px var(--pixel);background:var(--ink);color:#1a1d30;padding:5px 12px 6px;clip-path:var(--notch);z-index:30;animation:pop .16s steps(3)}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{transform:translate(var(--tx,0),6px);opacity:0}}
+.toast{--tx:-50%}
+@media (prefers-reduced-motion:reduce){.scrim,.card,.toast{animation:none}}
+@media (hover:none),(max-width:760px){.toast{bottom:auto;top:calc(76px + env(safe-area-inset-top,0px))}}
+@media (max-width:560px){.who{max-width:calc(100vw - 196px)}.who span#sub{display:none}.who b{font-size:12px}}
+@media (max-width:520px){.card h2{font-size:24px}.menu-list{grid-template-columns:1fr}.hbtn .lbl{display:none}.bar i{width:70px}.who{padding:6px 10px 7px 6px}.who canvas{width:36px;height:36px}}
+</style>
+
+<main class="stage" id="stage">
+  <canvas id="game" width="480" height="300" aria-label="A pixel-art bedroom studio. Use the menu for a list of everything in the room."></canvas>
+</main>
+<div class="who px" id="who">
+  <canvas id="ava" width="22" height="22" aria-hidden="true"></canvas>
+  <div class="t"><b id="nm">ABDALRAHMAN</b><span id="sub">network · AI · video · web</span><div class="bar"><i><em id="barFill"></em></i><span id="barTxt">0/14 explored</span></div></div>
+</div>
+<div class="tools">
+  <button class="hbtn px" id="bMenu" aria-label="Menu"><svg viewBox="0 0 8 8"><path d="M1 1h6v1H1zM1 3.5h6v1H1zM1 6h6v1H1z"/></svg><span class="lbl">MENU</span></button>
+  <button class="hbtn px" id="bLang" aria-label="Switch language">ع</button>
+  <button class="hbtn px" id="bNight" aria-pressed="false" aria-label="Night mode"><svg viewBox="0 0 8 8"><path d="M3 0h3v1H3zM2 1h1v1H2zM1 2h1v4H1zM2 6h1v1H2zM3 7h3v1H3zM6 6h1v1H6zM4 5h2v1H4zM3 2h1v3H3zM4 1h1v1H4z"/></svg></button>
+  <button class="hbtn px" id="bSound" aria-pressed="true" aria-label="Sound"><svg viewBox="0 0 8 8"><path d="M0 3h2v2H0zM2 2h1v4H2zM3 1h1v6H3zM5 2h1v1H5zM6 3h1v2H6zM5 5h1v1H5z"/></svg></button>
+</div>
+<div class="tip" id="tip" hidden></div>
+<div class="help px" id="help"><kbd>WASD</kbd> walk · <kbd>Shift</kbd> run · <kbd>E</kbd> use · or click anything</div>
+<div class="pad" aria-label="Touch controls">
+  <div class="dpad">
+    <button class="u px" data-k="up" aria-label="Up">▲</button><button class="l px" data-k="left" aria-label="Left">◀</button>
+    <button class="r px" data-k="right" aria-label="Right">▶</button><button class="d px" data-k="down" aria-label="Down">▼</button>
+  </div>
+  <div class="abtns"><button class="abtn run px" data-k="run" aria-label="Run">RUN</button><button class="abtn use px" id="bUse" aria-label="Use">E</button></div>
+</div>
+<div id="layer"></div>
+
