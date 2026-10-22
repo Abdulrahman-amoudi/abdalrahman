@@ -665,6 +665,7 @@ setLang(lang); setNight(night); fit();
 paintSound();
 cv.tabIndex = 0;
 requestAnimationFrame(frame);
-setTimeout(() => { if (!panelOpen) toast(T[lang].hello); }, 700);
+const touchUI = matchMedia('(hover:none),(max-width:760px)').matches;
+setTimeout(() => { if (!panelOpen) toast(T[lang].hello + (touchUI ? (lang === 'ar' ? ' اضغط على الأرض لتمشي، واضغط على أي إشي لتستخدمه.' : ' Tap the floor to walk, tap anything to use it.') : '')); }, 700);
 window.__room = { pl, get near() { return near; }, use, OBJ };
 })();
