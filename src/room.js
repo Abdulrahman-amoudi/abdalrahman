@@ -147,7 +147,7 @@ function buildRoom() {
     R(7, 9, 2, 1, OUT); R(11, 9, 2, 1, OUT); R(6, 8, 1, 1, OUT); R(9, 8, 1, 1, OUT); R(10, 8, 1, 1, OUT); R(13, 8, 1, 1, OUT);
     R(8, 12, 4, 2, OUT); R(9, 13, 2, 1, '#ff7f95'); R(5, 11, 2, 1, '#ff9db0'); R(13, 11, 2, 1, '#ff9db0');
   });
-  ART.player = buildPlayer();
+  ART.player = buildDetective();
 }
 
 // Static background: wall, stone strip, floor, rug (no outlines; it's the ground).

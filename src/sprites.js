@@ -1,5 +1,5 @@
 // Hand-drawn pixel sprites. Every row is exactly the sprite width.
-// The player is drawn from Abdalrahman's photo: curly dark-brown top, faded sides, thick brows,
+// The player is the detective: fedora, auburn hair, quilted navy jacket, green scarf.
 // light moustache, olive skin, light-blue tee, dark joggers, white sneakers.
 const PAL = {
   O: '#2a1e26',
@@ -156,5 +156,95 @@ function buildPlayer() {
     f['right' + i] = spriteCanvas(mirror(compose(HEAD_LEFT, BODY_LEFT, LEGS_LEFT[i])));
   }
   f.portrait = spriteCanvas(HEAD_DOWN);
+  return f;
+}
+// ---- detective player (fedora, auburn hair, quilted navy jacket, green scarf, dark boots): 18 wide ----
+const DPAL = {
+  O: '#14101c', N: '#1a3043', n: '#0f1d2c', l: '#2b4a64', b: '#0a121c',
+  H: '#8a3c22', h: '#5e2617', k: '#b25a34',
+  S: '#f6c39f', s: '#d99a78', a: '#c98a6a', p: '#f2907c', e: '#ffffff', E: '#14101c', M: '#8a3b3b',
+  J: '#1d3654', j: '#12233a', i: '#2e5175', G: '#1f6b4e', g: '#164d38',
+  P: '#3d3d45', d: '#2b2b31', F: '#3a2f26', f: '#1c1611',
+};
+const D_HAT = [
+  '.....OOOOOOOO.....',
+  '....OlNNNNNNnO....',
+  '....ONNNnnNNnO....',
+  '....ONNNNNNNnO....',
+  '...ObbbbbbbbbbO...',
+  '.OOlNNNNNNNNNNnOO.',
+  'OnnnnnnnnnnnnnnnnO',
+];
+const D_HEAD_DOWN = D_HAT.concat([
+  '.OHkHHHkHHHkHHkHO.',
+  '.OHHHSSHSSSHSSHHO.',
+  '.OHSSSSSSSSSSSSHO.',
+  'OhSSSeESSSSeESSShO',
+  'OhSSSEESSSSEESSShO',
+  '.OSppSSSSSSSSppSO.',
+  '..OSSSSSMMSSSSSO..',
+  '...OssSSSSSSssO...',
+  '....OOOsSSsOOO....',
+]);
+const D_HEAD_UP = D_HAT.concat([
+  '.OHkHHHkHHHkHHkHO.',
+  '.OHHHHHHHHHHHHHHO.',
+  '.OhHHkHHHHHkHHHhO.',
+  'OhhHHHHHHHHHHHHhhO',
+  'OhhhHHHHHHHHHHhhhO',
+  '.OhhhhhhhhhhhhhhO.',
+  '..OsSSSSSSSSSSsO..',
+  '...OssSSSSSSssO...',
+  '....OOOsSSsOOO....',
+]);
+const D_HEAD_LEFT = [
+  '....OOOOOOOO......',
+  '...OlNNNNNNnO.....',
+  '...ONNNnnNNnO.....',
+  '...ONNNNNNNnO.....',
+  '..ObbbbbbbbbbO....',
+  'OOlNNNNNNNNNNnOO..',
+  'OnnnnnnnnnnnnnnnO.',
+  '.OHkHHHHkHHHkHO...',
+  '.OSSHSSHHHHHHHO...',
+  'OSSSSSSSHHHhhO....',
+  'OSeESSSSSShhhO....',
+  'OSEESSSSSasShO....',
+  'OSSSSSSSSaaSO.....',
+  'OSppSSSSSSSsO.....',
+  '.OMSSSSSSSsO......',
+  '..OOOsSsOOO.......',
+];
+const D_BODY_DOWN = [
+  '...OOGGGGGGGGOO...',
+  '..OJgGGGGGGGGgJO..',
+  '.OiJJJJJjJJJJJJjO.',
+  '.OJJOiJJjJJJiOJjO.',
+  '.OSsOjJJjJJJjOsSO.',
+  '.OSSOJJJjJJJJOSSO.',
+  '..OOOjjjjjjjjOOO..',
+  '....OdPPPPPPdO....',
+];
+const D_BODY_LEFT = [
+  '.....OOGGGGOO.....',
+  '....OJGGGGGGgO....',
+  '...OiJJJJJJJJjO...',
+  '...OJJJOJJJJJjO...',
+  '...OJJSsJJJJJjO...',
+  '...OOOSSJJJJjjO...',
+  '....OOOjjjjjjO....',
+  '.....OdPPPPPdO....',
+];
+const dLegs = L => L.map(f => f.map(r => r.replace(/J/g, 'P').replace(/j/g, 'd').replace(/F/g, 'F').replace(/f/g, 'f')));
+function buildDetective() {
+  const pad = r => (r + '..................').slice(0, 18);
+  const f = {}, LD = dLegs(LEGS_DOWN), LL = dLegs(LEGS_LEFT);
+  for (let i = 0; i < 3; i++) {
+    f['down' + i] = spriteCanvas(D_HEAD_DOWN.concat(D_BODY_DOWN, LD[i]).map(pad), DPAL);
+    f['up' + i] = spriteCanvas(D_HEAD_UP.concat(D_BODY_DOWN, LD[i]).map(pad), DPAL);
+    f['left' + i] = spriteCanvas(D_HEAD_LEFT.concat(D_BODY_LEFT, LL[i]).map(pad), DPAL);
+    f['right' + i] = spriteCanvas(mirror(D_HEAD_LEFT.concat(D_BODY_LEFT, LL[i]).map(pad)), DPAL);
+  }
+  f.portrait = spriteCanvas(D_HEAD_DOWN.map(pad), DPAL);
   return f;
 }
