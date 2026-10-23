@@ -248,7 +248,8 @@ function drawSun(t, p) {
 }
 function drawPlayer() {
   const x = Math.round(pl.x), y = Math.round(pl.y);
-  const frame = pl.moving ? (Math.floor(pl.step / 6) % 4) : 0;   // your 4-frame walk cycle
+  const STAND = {"down": 0, "left": 3, "right": 1, "up": 0};   // frame with the feet together, used when he stops
+  const frame = pl.moving ? (Math.floor(pl.step / 6) % 4) : STAND[pl.dir];   // your 4-frame walk cycle
   R(x - 8, y - 2, 16, 3, 'rgba(0,0,0,.18)');
   const im = ART.player[pl.dir + frame]; g.drawImage(im, x - (im.width >> 1), y - im.height + 1);
 }
