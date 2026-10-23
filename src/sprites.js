@@ -1,5 +1,5 @@
 // Hand-drawn pixel sprites. Every row is exactly the sprite width.
-// The player is the detective: fedora, auburn hair, quilted navy jacket, green scarf.
+// The player is drawn from Abdalrahman's photo: curly dark-brown top, faded sides, thick brows,
 // light moustache, olive skin, light-blue tee, dark joggers, white sneakers.
 const PAL = {
   O: '#2a1e26',
@@ -158,93 +158,18 @@ function buildPlayer() {
   f.portrait = spriteCanvas(HEAD_DOWN);
   return f;
 }
-// ---- detective player (fedora, auburn hair, quilted navy jacket, green scarf, dark boots): 18 wide ----
-const DPAL = {
-  O: '#14101c', N: '#1a3043', n: '#0f1d2c', l: '#2b4a64', b: '#0a121c',
-  H: '#8a3c22', h: '#5e2617', k: '#b25a34',
-  S: '#f6c39f', s: '#d99a78', a: '#c98a6a', p: '#f2907c', e: '#ffffff', E: '#14101c', M: '#8a3b3b',
-  J: '#1d3654', j: '#12233a', i: '#2e5175', G: '#1f6b4e', g: '#164d38',
-  P: '#3d3d45', d: '#2b2b31', F: '#3a2f26', f: '#1c1611',
-};
-const D_HAT = [
-  '.....OOOOOOOO.....',
-  '....OlNNNNNNnO....',
-  '....ONNNnnNNnO....',
-  '....ONNNNNNNnO....',
-  '...ObbbbbbbbbbO...',
-  '.OOlNNNNNNNNNNnOO.',
-  'OnnnnnnnnnnnnnnnnO',
-];
-const D_HEAD_DOWN = D_HAT.concat([
-  '.OHkHHHkHHHkHHkHO.',
-  '.OHHHSSHSSSHSSHHO.',
-  '.OHSSSSSSSSSSSSHO.',
-  'OhSSSeESSSSeESSShO',
-  'OhSSSEESSSSEESSShO',
-  '.OSppSSSSSSSSppSO.',
-  '..OSSSSSMMSSSSSO..',
-  '...OssSSSSSSssO...',
-  '....OOOsSSsOOO....',
-]);
-const D_HEAD_UP = D_HAT.concat([
-  '.OHkHHHkHHHkHHkHO.',
-  '.OHHHHHHHHHHHHHHO.',
-  '.OhHHkHHHHHkHHHhO.',
-  'OhhHHHHHHHHHHHHhhO',
-  'OhhhHHHHHHHHHHhhhO',
-  '.OhhhhhhhhhhhhhhO.',
-  '..OsSSSSSSSSSSsO..',
-  '...OssSSSSSSssO...',
-  '....OOOsSSsOOO....',
-]);
-const D_HEAD_LEFT = [
-  '....OOOOOOOO......',
-  '...OlNNNNNNnO.....',
-  '...ONNNnnNNnO.....',
-  '...ONNNNNNNnO.....',
-  '..ObbbbbbbbbbO....',
-  'OOlNNNNNNNNNNnOO..',
-  'OnnnnnnnnnnnnnnnO.',
-  '.OHkHHHHkHHHkHO...',
-  '.OSSHSSHHHHHHHO...',
-  'OSSSSSSSHHHhhO....',
-  'OSeESSSSSShhhO....',
-  'OSEESSSSSasShO....',
-  'OSSSSSSSSaaSO.....',
-  'OSppSSSSSSSsO.....',
-  '.OMSSSSSSSsO......',
-  '..OOOsSsOOO.......',
-];
-const D_BODY_DOWN = [
-  '...OOGGGGGGGGOO...',
-  '..OJgGGGGGGGGgJO..',
-  '.OiJJJJJjJJJJJJjO.',
-  '.OJJOiJJjJJJiOJjO.',
-  '.OSsOjJJjJJJjOsSO.',
-  '.OSSOJJJjJJJJOSSO.',
-  '..OOOjjjjjjjjOOO..',
-  '....OdPPPPPPdO....',
-];
-const D_BODY_LEFT = [
-  '.....OOGGGGOO.....',
-  '....OJGGGGGGgO....',
-  '...OiJJJJJJJJjO...',
-  '...OJJJOJJJJJjO...',
-  '...OJJSsJJJJJjO...',
-  '...OOOSSJJJJjjO...',
-  '....OOOjjjjjjO....',
-  '.....OdPPPPPdO....',
-];
-const dLegs = L => L.map(f => f.map(r => r.replace(/J/g, 'P').replace(/j/g, 'd').replace(/F/g, 'F').replace(/f/g, 'f')));
+// ---- detective player (the user's design: fedora, auburn hair, quilted navy jacket, green scarf, dark boots): 22x36 chibi ----
+const DPAL = {"O": "#14101c", "N": "#1d3346", "n": "#12202e", "l": "#30506c", "b": "#0a121c", "H": "#8f3f22", "h": "#5e2617", "k": "#b85d34", "S": "#f6c39f", "s": "#d99a78", "p": "#f0907c", "E": "#14101c", "e": "#ffffff", "M": "#8a3b3b", "J": "#1f3a55", "j": "#132538", "i": "#2f5677", "q": "#162a3e", "T": "#1a1a22", "G": "#2a7a52", "g": "#1a5438", "z": "#3a9a6a", "P": "#3e4048", "d": "#2a2b31", "F": "#3a2f27", "f": "#1a1410"};
+const DFR = {"down0": ["......OOOO..OOOO......", ".....OlNNNOONNNNO.....", "....OllNNNnnNNNNnO....", "....OlNNNNNNNNNNnO....", "....OlNNNNNNNNNNnO....", "..OOObbbbbbbbbbbbOOO..", ".ONNNNNNNNNNNNNNNNNNO.", "ONnnnnnnnnnnnnnnnnnnNO", ".OOHHHkHHHkHHHkHHHHOO.", ".OHHHHhHHHhHHhHHHhHHO.", "..OHhHShHhSHhSHhhsHO..", ".OHHShSShSShSShSSsHHO.", "..OHSSSeESSSSeESSsHO..", "..OHSSSEESSSSEESSsHO..", "..OHSSSEESSSSEESSsHO..", "..OhSppSSSSSSSSppshO..", "..OHOSSSSSMMSSSSSOHO..", "...O.OSSSSSSSSSSO.O...", "....OzzzzssssGGGGO....", "...OOGGGGGGGGGGGGOO...", "..OjJiJJiTTTTGgjjJjO..", "..OJJqJqJTTTTGGqjJJO..", "..OJJiJJJTTTTGgjjJJO..", "..OJJiJJJTTTTGGjjJJO..", "..OJJqJqJTTTTgGqjJJO..", "..OJJJiiiTTTTiiijJJO..", "..OSsJJJJTTTTJJJjSsO..", "...OiJJJJTTTTJJJjjO...", "....OOOPPdOOPPdOOO....", "......OPPdOOPPdO......", "......OPPdOOPPdO......", "......OPPdOOPPdO......", "......OPPdOOPPdO......", ".....OFFFFOFFFFO......", ".....OffffOffffO......", "......OOOO.OOOO......."], "down1": ["......OOOO..OOOO......", ".....OlNNNOONNNNO.....", "....OllNNNnnNNNNnO....", "....OlNNNNNNNNNNnO....", "....OlNNNNNNNNNNnO....", "..OOObbbbbbbbbbbbOOO..", ".ONNNNNNNNNNNNNNNNNNO.", "ONnnnnnnnnnnnnnnnnnnNO", ".OOHHHkHHHkHHHkHHHHOO.", ".OHHHHhHHHhHHhHHHhHHO.", "..OHhHShHhSHhSHhhsHO..", ".OHHShSShSShSShSSsHHO.", "..OHSSSeESSSSeESSsHO..", "..OHSSSEESSSSEESSsHO..", "..OHSSSEESSSSEESSsHO..", "..OhSppSSSSSSSSppshO..", "..OHOSSSSSMMSSSSSOHO..", "...O.OSSSSSSSSSSO.O...", "....OzzzzssssGGGGO....", "...OOGGGGGGGGGGGGOO...", "..OjJiJJiTTTTGgjjJjO..", "..OJJqJqJTTTTGGqjJJO..", "..OJJiJJJTTTTGgjjJJO..", "..OJJiJJJTTTTGGjjJJO..", "..OJJqJqJTTTTgGqjJJO..", "..OJJJiiiTTTTiiijSsO..", "..OJJJJJJTTTTJJJjjO...", "..OSsJJJJTTTTJJJjjO...", "...OOOOPPdOOPPdOOO....", "......OPPdOOPPdO......", "......OPPdOOPPdO......", ".....OFFFFOOPPdO......", ".....OffffOOPPdO......", "......OOOOOFFFFO......", "..........OffffO......", "...........OOOO......."], "down2": ["......OOOO..OOOO......", ".....OlNNNOONNNNO.....", "....OllNNNnnNNNNnO....", "....OlNNNNNNNNNNnO....", "....OlNNNNNNNNNNnO....", "..OOObbbbbbbbbbbbOOO..", ".ONNNNNNNNNNNNNNNNNNO.", "ONnnnnnnnnnnnnnnnnnnNO", ".OOHHHkHHHkHHHkHHHHOO.", ".OHHHHhHHHhHHhHHHhHHO.", "..OHhHShHhSHhSHhhsHO..", ".OHHShSShSShSShSSsHHO.", "..OHSSSeESSSSeESSsHO..", "..OHSSSEESSSSEESSsHO..", "..OHSSSEESSSSEESSsHO..", "..OhSppSSSSSSSSppshO..", "..OHOSSSSSMMSSSSSOHO..", "...O.OSSSSSSSSSSO.O...", "....OzzzzssssGGGGO....", "...OOGGGGGGGGGGGGOO...", "..OjJiJJiTTTTGgjjJjO..", "..OJJqJqJTTTTGGqjJJO..", "..OJJiJJJTTTTGgjjJJO..", "..OJJiJJJTTTTGGjjJJO..", "..OJJqJqJTTTTgGqjJJO..", "..OSsJiiiTTTTiiijJJO..", "...OiJJJJTTTTJJJjJJO..", "...OiJJJJTTTTJJJjSsO..", "....OOOPPdOOPPdOOOO...", "......OPPdOOPPdO......", "......OPPdOOPPdO......", "......OPPdOFFFFO......", "......OPPdOffffO......", ".....OFFFFOOOOO.......", ".....OffffO...........", "......OOOO............"], "up0": ["......OOOO..OOOO......", ".....OlNNNOONNNNO.....", "....OllNNNnnNNNNnO....", "....OlNNNNNNNNNNnO....", "....OlNNNNNNNNNNnO....", "..OOObbbbbbbbbbbbOOO..", ".ONNNNNNNNNNNNNNNNNNO.", "ONnnnnnnnnnnnnnnnnnnNO", ".OOhHHhHHhHHhHHhHHhOO.", ".OHhHkhHHkHHhkHhHkhHO.", "..OhHHhHHhHHhHHhHHhO..", ".OHhHHhHHhHHhHHhHHhHO.", "..OhHHhHHhHHhHHhHHhO..", "..OhHHhHHhHHhHHhHHhO..", "..OhHHhHHhHHhHHhHHhO..", "..OHHHhHHhHHhHHhHHHO..", "...OOHOssHHssHsOHOO...", ".....OOssssssssOO.....", "....OzzzssssssGGGO....", "...OOggggggggggggOO...", "..OjJiJJJGGqJJJjjJjO..", "..OJJqJqJGGqJqJqjJJO..", "..OJJiJJJGGqJJJjjJJO..", "..OJJiJJJJqqJJJjjJJO..", "..OJJqJqJqqqJqJqjJJO..", "..OJJJJJJJqqJJJJjJJO..", "..OSsJJJJJqqJJJJjSsO..", "...OiJJJJJqqJJJJjjO...", "....OOOPPdOOPPdOOO....", "......OPPdOOPPdO......", "......OPPdOOPPdO......", "......OPPdOOPPdO......", "......OPPdOOPPdO......", ".....OFFFFOFFFFO......", ".....OffffOffffO......", "......OOOO.OOOO......."], "up1": ["......OOOO..OOOO......", ".....OlNNNOONNNNO.....", "....OllNNNnnNNNNnO....", "....OlNNNNNNNNNNnO....", "....OlNNNNNNNNNNnO....", "..OOObbbbbbbbbbbbOOO..", ".ONNNNNNNNNNNNNNNNNNO.", "ONnnnnnnnnnnnnnnnnnnNO", ".OOhHHhHHhHHhHHhHHhOO.", ".OHhHkhHHkHHhkHhHkhHO.", "..OhHHhHHhHHhHHhHHhO..", ".OHhHHhHHhHHhHHhHHhHO.", "..OhHHhHHhHHhHHhHHhO..", "..OhHHhHHhHHhHHhHHhO..", "..OhHHhHHhHHhHHhHHhO..", "..OHHHhHHhHHhHHhHHHO..", "...OOHOssHHssHsOHOO...", ".....OOssssssssOO.....", "....OzzzssssssGGGO....", "...OOggggggggggggOO...", "..OjJiJJJGGqJJJjjJjO..", "..OJJqJqJGGqJqJqjJJO..", "..OJJiJJJGGqJJJjjJJO..", "..OJJiJJJJqqJJJjjJJO..", "..OJJqJqJqqqJqJqjJJO..", "..OJJJJJJJqqJJJJjSsO..", "..OJJJJJJJqqJJJJjjO...", "..OSsJJJJJqqJJJJjjO...", "...OOOOPPdOOPPdOOO....", "......OPPdOOPPdO......", "......OPPdOOPPdO......", ".....OFFFFOOPPdO......", ".....OffffOOPPdO......", "......OOOOOFFFFO......", "..........OffffO......", "...........OOOO......."], "up2": ["......OOOO..OOOO......", ".....OlNNNOONNNNO.....", "....OllNNNnnNNNNnO....", "....OlNNNNNNNNNNnO....", "....OlNNNNNNNNNNnO....", "..OOObbbbbbbbbbbbOOO..", ".ONNNNNNNNNNNNNNNNNNO.", "ONnnnnnnnnnnnnnnnnnnNO", ".OOhHHhHHhHHhHHhHHhOO.", ".OHhHkhHHkHHhkHhHkhHO.", "..OhHHhHHhHHhHHhHHhO..", ".OHhHHhHHhHHhHHhHHhHO.", "..OhHHhHHhHHhHHhHHhO..", "..OhHHhHHhHHhHHhHHhO..", "..OhHHhHHhHHhHHhHHhO..", "..OHHHhHHhHHhHHhHHHO..", "...OOHOssHHssHsOHOO...", ".....OOssssssssOO.....", "....OzzzssssssGGGO....", "...OOggggggggggggOO...", "..OjJiJJJGGqJJJjjJjO..", "..OJJqJqJGGqJqJqjJJO..", "..OJJiJJJGGqJJJjjJJO..", "..OJJiJJJJqqJJJjjJJO..", "..OJJqJqJqqqJqJqjJJO..", "..OSsJJJJJqqJJJJjJJO..", "...OiJJJJJqqJJJJjJJO..", "...OiJJJJJqqJJJJjSsO..", "....OOOPPdOOPPdOOOO...", "......OPPdOOPPdO......", "......OPPdOOPPdO......", "......OPPdOFFFFO......", "......OPPdOffffO......", ".....OFFFFOOOOO.......", ".....OffffO...........", "......OOOO............"], "side0": [".......OOOO..OOOO.....", "......OlNNNOONNNNO....", ".....OllNNNnnNNNNnO...", ".....OlNNNNNNNNNNnO...", ".....OlNNNNNNNNNNnO...", ".OOOOObbbbbbbbbbbbOOO.", "ONNNNNNNNNNNNNNNNNNNNO", "NnnnnnnnnnnnnnnnnnnnnN", "OOHHHHHHkHHHkHHHkHHOOO", ".OhHHHHHHHhHHHhHHHHO..", "OHhHHHhHhHShHhShHhhO..", ".OhHHHshShSShSSShSSO..", ".OhHHHsSSSSeESSeESSO..", "OHhHHHsSSSSEESSEESSO..", ".OhHHHsSSSSEESSEESpO..", ".OhHHHsSSppSSSSSSSO...", ".OhHHHSSSSSSSSMMSSO...", ".OHHHHSSSSSSSSSSSO....", "..OOOOzzzzssssGGGO....", ".....OGGGGGGGGGGGO....", "....OGiJJJjjJJTTO.....", "...OGOqJqJjjqJTTO.....", "....OGiJJjjjJJTTO.....", "...OgOiJJjjjJJTTO.....", "....OOqJqijjqJTTO.....", "....OiJiijjjJJTTjO....", "....OiJJJSSsJJTTjO....", "....OiJJJJJJJJJJjO....", ".....OOOPPdPPdOOO.....", ".......OPPdPPdO.......", ".......OPPdPPdO.......", ".......OPPdPPdO.......", ".......OPPdPPdO.......", ".......OFFFFFFFO......", ".......OfffffffO......", "........OOOOOOO......."], "side1": [".......OOOO..OOOO.....", "......OlNNNOONNNNO....", ".....OllNNNnnNNNNnO...", ".....OlNNNNNNNNNNnO...", ".....OlNNNNNNNNNNnO...", ".OOOOObbbbbbbbbbbbOOO.", "ONNNNNNNNNNNNNNNNNNNNO", "NnnnnnnnnnnnnnnnnnnnnN", "OOHHHHHHkHHHkHHHkHHOOO", ".OhHHHHHHHhHHHhHHHHO..", "OHhHHHhHhHShHhShHhhO..", ".OhHHHshShSShSSShSSO..", ".OhHHHsSSSSeESSeESSO..", "OHhHHHsSSSSEESSEESSO..", ".OhHHHsSSSSEESSEESpO..", ".OhHHHsSSppSSSSSSSO...", ".OhHHHSSSSSSSSMMSSO...", ".OHHHHSSSSSSSSSSSO....", "..OOOOzzzzssssGGGO....", "...OOGGGGGGGGGGGGO....", "..OGGOiJJJJjjJTTO.....", "...OGOqJqJJjjJTTO.....", "..OgOOiJJJjjjJTTO.....", "...O.OiJJJjjjJTTO.....", ".....OqJqJijjJTTO.....", "....OiJiiijjjJTTjO....", "....OiJJJJSSsJTTjO....", "....OiJJJJJJJJJJjO....", ".....OPPdOOOOPPdO.....", ".....OPPdO..OPPdO.....", ".....OPPdO..OPPdO.....", ".....OPPdO..OPPdO.....", ".....OFFFFO.OPPdO.....", ".....OffffO.OFFFFO....", "......OOOO..OffffO....", ".............OOOO....."], "side2": [".......OOOO..OOOO.....", "......OlNNNOONNNNO....", ".....OllNNNnnNNNNnO...", ".....OlNNNNNNNNNNnO...", ".....OlNNNNNNNNNNnO...", ".OOOOObbbbbbbbbbbbOOO.", "ONNNNNNNNNNNNNNNNNNNNO", "NnnnnnnnnnnnnnnnnnnnnN", "OOHHHHHHkHHHkHHHkHHOOO", ".OhHHHHHHHhHHHhHHHHO..", "OHhHHHhHhHShHhShHhhO..", ".OhHHHshShSShSSShSSO..", ".OhHHHsSSSSeESSeESSO..", "OHhHHHsSSSSEESSEESSO..", ".OhHHHsSSSSEESSEESpO..", ".OhHHHsSSppSSSSSSSO...", ".OhHHHSSSSSSSSMMSSO...", ".OHHHHSSSSSSSSSSSO....", "..OOOOzzzzssssGGGO....", "...OOGGGGGGGGGGGGO....", "..OGGOiJJjjJJJTTO.....", "...OGOqJJjjJqJTTO.....", "..OgOOiJjjjJJJTTO.....", "...O.OiJjjjJJJTTO.....", ".....OqJijjJqJTTO.....", "....OiJijjjJJJTTjO....", "....OiJJSSsJJJTTjO....", "....OiJJJJJJJJJJjO....", ".....OOPPdOOPPdOO.....", "......OPPdOOPPdO......", "......OPPdOOPPdO......", "......OPPdOOPPdO......", "......OPPdOOFFFFO.....", "......OFFFFOffffO.....", "......OffffOOOOO......", ".......OOOO..........."]};
 function buildDetective() {
-  const pad = r => (r + '..................').slice(0, 18);
-  const f = {}, LD = dLegs(LEGS_DOWN), LL = dLegs(LEGS_LEFT);
+  const f = {};
   for (let i = 0; i < 3; i++) {
-    f['down' + i] = spriteCanvas(D_HEAD_DOWN.concat(D_BODY_DOWN, LD[i]).map(pad), DPAL);
-    f['up' + i] = spriteCanvas(D_HEAD_UP.concat(D_BODY_DOWN, LD[i]).map(pad), DPAL);
-    f['left' + i] = spriteCanvas(D_HEAD_LEFT.concat(D_BODY_LEFT, LL[i]).map(pad), DPAL);
-    f['right' + i] = spriteCanvas(mirror(D_HEAD_LEFT.concat(D_BODY_LEFT, LL[i]).map(pad)), DPAL);
+    f['down' + i] = spriteCanvas(DFR['down' + i], DPAL);
+    f['up' + i] = spriteCanvas(DFR['up' + i], DPAL);
+    f['right' + i] = spriteCanvas(DFR['side' + i], DPAL);
+    f['left' + i] = spriteCanvas(mirror(DFR['side' + i]), DPAL);
   }
-  f.portrait = spriteCanvas(D_HEAD_DOWN.map(pad), DPAL);
+  // portrait: head + hat only, trimmed to fit the 22px badge
+  f.portrait = spriteCanvas(DFR.down0.slice(0, 20), DPAL);
   return f;
 }
