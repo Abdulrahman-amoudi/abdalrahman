@@ -72,35 +72,45 @@ async function paintSpread(p, i) {
     if (textInCanvas) {
         const ar = lang() === 'ar', side = sideFor(p);
         ctx.direction = ar ? 'rtl' : 'ltr';
-        const boxW = SW * .40, x0 = side === 'right' ? SW * .55 : SW * .06;
-        const startX = ar ? x0 + boxW : x0;
         ctx.textAlign = ar ? 'right' : 'left';
         ctx.textBaseline = 'alphabetic';
-        const titleSize = p.emboss ? (ar ? 150 : 160) : (ar ? 112 : 124);
-        ctx.font = `700 ${titleSize}px "Readex Pro"`;
+        // a column in the empty half, kept well away from the fold and the edge
+        const colW = SW * .34, colX = side === 'right' ? SW * .585 : SW * .075;
+        const x = ar ? colX + colW : colX;
         const titleText = p.emboss && !ar ? t(p.title).toUpperCase() : t(p.title);
-        const tl = wrap(ctx, titleText, p.emboss ? SW * .44 : boxW);
-        ctx.font = `400 ${ar ? 40 : 38}px "Readex Pro"`;
-        const bl = wrap(ctx, t(p.body), boxW * .92);
-        const lh = titleSize * (ar ? 1.25 : 1.02), blh = ar ? 66 : 58;
-        const total = tl.length * lh + 50 + bl.length * blh;
-        let y = SH / 2 - total / 2 + titleSize * .82;
-        ctx.font = `700 ${titleSize}px "Readex Pro"`;
+        let size = p.emboss ? (ar ? 132 : 138) : (ar ? 104 : 112);
+        let tl;
+        for (; size > 60; size -= 4) {
+            ctx.font = `700 ${size}px "Readex Pro"`;
+            tl = wrap(ctx, titleText, colW);
+            if (tl.length <= 3 && tl.every(l => ctx.measureText(l).width <= colW * 1.02)) break;
+        }
+        const lh = size * (ar ? 1.28 : 1.0);
+        const bodySize = ar ? 40 : 38, blh = ar ? 66 : 58;
+        ctx.font = `400 ${bodySize}px "Readex Pro"`;
+        const bl = wrap(ctx, t(p.body), colW * .94);
+        const gap = p.emboss ? 54 : 96;
+        const total = tl.length * lh + gap + bl.length * blh;
+        let y = SH * .5 - total / 2 + size * .8;
+        ctx.font = `700 ${size}px "Readex Pro"`;
         for (const line of tl) {
             if (p.emboss) {
-                const layers = ['#a9a092', '#bdb5a7', '#d4ccbe'];
-                ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.fillText(line, startX + 4, y + 18);
-                layers.forEach((col, k) => { ctx.fillStyle = col; ctx.fillText(line, startX, y + 9 - k * 3); });
-                ctx.fillStyle = '#f8f3ea'; ctx.fillText(line, startX, y);
-            } else { ctx.fillStyle = p.ink; ctx.fillText(line, startX, y); }
+                // letters standing off the page: two soft steps of the page colour, then a gentle shadow
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,.28)'; ctx.shadowBlur = 22; ctx.shadowOffsetY = 12;
+                ctx.fillStyle = shade(p.bg, -.35); ctx.fillText(line, x, y + 7);
+                ctx.restore();
+                ctx.fillStyle = shade('#efe8dc', -.12); ctx.fillText(line, x, y + 3.5);
+                ctx.fillStyle = '#f6f1e8'; ctx.fillText(line, x, y);
+            } else { ctx.fillStyle = p.ink; ctx.fillText(line, x, y); }
             y += lh;
         }
-        y += 20 - lh + titleSize * .2;
-        if (!p.emboss) { ctx.fillStyle = p.ink; ctx.globalAlpha = .7; ctx.fillRect(ar ? startX - 70 : startX, y, 70, 6); ctx.globalAlpha = 1; y += 30; }
-        y += blh;
-        ctx.font = `400 ${ar ? 40 : 38}px "Readex Pro"`;
-        ctx.fillStyle = p.emboss ? '#fbf6ee' : p.ink;
-        for (const line of bl) { ctx.fillText(line, startX, y); y += blh; }
+        y += gap - lh + size * .2;
+        if (!p.emboss) { ctx.fillStyle = p.ink; ctx.globalAlpha = .6; ctx.fillRect(ar ? x - 64 : x, y - 30, 64, 5); ctx.globalAlpha = 1; y += 16; }
+        y += bodySize * .4;
+        ctx.font = `400 ${bodySize}px "Readex Pro"`;
+        ctx.fillStyle = p.emboss ? 'rgba(250,246,238,.92)' : p.ink;
+        for (const line of bl) { ctx.fillText(line, x, y); y += blh; }
     }
     // folio
     ctx.globalAlpha = .55; ctx.fillStyle = p.emboss ? '#fbf6ee' : p.ink; ctx.font = `400 30px "Readex Pro"`;
@@ -205,8 +215,8 @@ const backBoard = new Mesh(new BoxGeometry(PW + .03, PH + .04, .016), boardMat);
 backBoard.position.set(PW / 2 + .005, 0, .008); backBoard.castShadow = backBoard.receiveShadow = true; book.add(backBoard);
 const leftBoard = new Mesh(new BoxGeometry(PW + .03, PH + .04, .016), boardMat);
 leftBoard.position.set(-PW / 2 - .005, 0, .008); leftBoard.receiveShadow = true; book.add(leftBoard);
-const spine = new Mesh(new BoxGeometry(.022, PH + .04, .018), spineMat);
-spine.position.set(-.006, 0, .009); spine.castShadow = true; book.add(spine);
+const spine = new Mesh(new BoxGeometry(.02, PH - .02, .016), spineMat);
+spine.position.set(-.012, 0, .008); spine.castShadow = true; book.add(spine);
 const blockR = new Mesh(new BoxGeometry(PW, PH, 1), paperEdge); blockR.castShadow = blockR.receiveShadow = true; book.add(blockR);
 const blockL = new Mesh(new BoxGeometry(PW, PH, 1), paperEdge); blockL.castShadow = blockL.receiveShadow = true; book.add(blockL);
 
@@ -324,8 +334,7 @@ function frame(now) {
         P = easeInOut(k); V = 0;
         if (k >= 1) { opening = null; P = target = 1; }
     } else if (!dragging) {
-        if (reduced) { P = target; V = 0; }
-        else {
+        {
             // critically damped spring toward the target page
             const k = 13, c = 2 * Math.sqrt(k) * 1.02;   // slow, heavy paper
             V += ((target - P) * k - V * c) * dt;
@@ -336,7 +345,7 @@ function frame(now) {
     const moving = P !== layout.lastP;
     if (moving || needsRender || !opened) {
         // the closed book breathes on the desk
-        book.position.z = opened ? 0 : Math.sin(now / 1100) * .012 + .012;
+        book.position.z = opened || reduced ? 0 : Math.sin(now / 1100) * .012 + .012;
         layout(); renderer.render(scene, camera);
         layout.lastP = P; needsRender = false; idle = 0;
         onProgress();
@@ -391,7 +400,7 @@ function open() {
     document.body.classList.add('is-open');
     ctrls.hidden = false;
     target = 1;
-    if (!reduced) opening = performance.now();
+    opening = performance.now();
 }
 $('#openBtn').addEventListener('click', open);
 $('#prev').addEventListener('click', () => go(Math.round(target) - 1));
