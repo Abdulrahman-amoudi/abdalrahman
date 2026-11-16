@@ -310,7 +310,7 @@ const edgeTex = (() => {
 })();
 const paperEdge = new MeshStandardMaterial({ color: '#ffffff', map: edgeTex, roughness: 1 });
 const boardMat = new MeshStandardMaterial({ color: '#2a4433', roughness: 1 });
-const spineMat = new MeshStandardMaterial({ color: '#b98a45', roughness: .9 });
+const spineMat = boardMat;
 // soft rounded slab (rounded corners in the page plane), centred like a box
 function roundedSlab(w, h, d, r) {
     const sh = new Shape(), x = -w / 2, y = -h / 2;
@@ -326,7 +326,7 @@ function roundedSlab(w, h, d, r) {
 const backBoard = new Mesh(roundedSlab(PW + .03, PH + .04, .016, .045), boardMat);
 backBoard.position.set(PW / 2 + .005, 0, .008); backBoard.castShadow = backBoard.receiveShadow = true; book.add(backBoard);
 const leftBoard = new Mesh(roundedSlab(PW + .03, PH + .04, .016, .045), boardMat);
-leftBoard.position.set(-PW / 2 - .005, 0, .008); leftBoard.receiveShadow = true; book.add(leftBoard);
+leftBoard.castShadow = true; leftBoard.receiveShadow = true; book.add(leftBoard);
 const spine = new Mesh(new BoxGeometry(.02, PH - .02, .016), spineMat);
 spine.position.set(-.012, 0, .008); spine.castShadow = true; book.add(spine);
 // a ribbon bookmark hanging out of the closed book
@@ -362,7 +362,7 @@ class Sheet {
         const pos = this.geo.attributes.position.array;
         const theta = turn * Math.PI;
         const lift = Math.sin(turn * Math.PI);
-        const curl = lift * 0.95;                       // how much the free edge trails behind
+        const curl = this.i === 0 ? 0 : lift * 0.95;   // the cover is a stiff board; paper pages curl
         // the page bows up as it lifts, then its edge trails as it falls; blend the two so nothing snaps at the top
         const m = Math.min(1, Math.max(0, (turn - .2) / .6)), bow = -0.35 + 1.35 * m * m * (3 - 2 * m);
         const z0 = zRight + (zLeft - zRight) * turn + lift * .02;
@@ -390,13 +390,15 @@ const sheets = Array.from({ length: N + 1 }, (_, i) => new Sheet(i));
 
 /* ------------------------------------------------------------- textures */
 let painting = null;
-async function paintAll() {
+async function paintAll(gentle = false) {
+    const breathe = () => gentle ? new Promise(r => setTimeout(r, 0)) : null;
     textInCanvas = innerWidth > 760;
     await Promise.all([
         document.fonts.load('800 90px "Baloo Bhaijaan 2"', 'Aa'), document.fonts.load('800 90px "Baloo Bhaijaan 2"', 'عربي'), document.fonts.load('700 100px "Readex Pro"', 'Aa'), document.fonts.load('400 40px "Readex Pro"', 'Aa'),
         document.fonts.load('700 100px "Readex Pro"', 'عربي'), document.fonts.load('400 40px "Readex Pro"', 'عربي'),
     ]).catch(() => {});
-    const spreads = await Promise.all(PAGES.map((p, i) => paintSpread(p, i)));
+    const spreads = [];
+    for (let i = 0; i < PAGES.length; i++) { spreads.push(await paintSpread(PAGES[i], i)); await breathe(); }
     const front = await paintCover(false), backC = await paintCover(true);
     const r = rtl();
     mirrored = r; book.scale.x = r ? -1 : 1;
@@ -431,8 +433,15 @@ function layout() {
     const hL = topL >= 0 ? topL * D + .0002 : 0;
     blockR.visible = hR > .0003; blockR.scale.z = Math.max(.0001, hR); blockR.position.set(PW / 2, 0, .016 + hR / 2);
     blockL.visible = hL > .0003; blockL.scale.z = Math.max(.0001, hL); blockL.position.set(-PW / 2, 0, .016 + hL / 2);
-    leftBoard.visible = P > .985;
-    spine.visible = P > .02;
+    // the cover's board is glued to the cover and swings over with it
+    {
+        const t0 = Math.max(0, Math.min(1, P)), a = t0 * Math.PI, lift = Math.sin(a);
+        const zR = .016 + N * D + .001, zL = .016 + .001;
+        const z0 = zR + (zL - zR) * t0 + lift * .02, sMid = PW / 2 + .005, off = .0088;
+        leftBoard.position.set(Math.cos(a) * sMid + Math.sin(a) * off, 0, z0 + Math.sin(a) * sMid - Math.cos(a) * off);
+        leftBoard.rotation.y = -a;
+        leftBoard.visible = true;
+    }
     // the book slides so whatever is open sits in the middle
     book.position.x = (mirrored ? 1 : -1) * PW / 2 * (1 - o);
     book.rotation.z = 0;
@@ -536,30 +545,25 @@ function go(i) {
     const span = Math.abs(target - P);
     turn = { from: P, to: target, t0: performance.now(), dur: Math.min(2200, 1150 + 260 * (span - 1)) };
 }
-// language switch: every letter scrambles through the new alphabet and settles into the new word
-const GLYPHS = { en: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', ar: 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي' };
-function morphText(el, to, dur = 900) {
-    const from = el.textContent, set = GLYPHS[lang()], n = Math.max(from.length, to.length), t0 = performance.now();
-    const settle = Array.from({ length: n }, (_, i) => (i / n) * .55 + Math.random() * .3);
-    cancelAnimationFrame(el._morph);
-    el.classList.add('morphing');
-    const step = now => {
-        const k = Math.min(1, (now - t0) / dur);
-        let out = '';
-        for (let i = 0; i < n; i++) {
-            if (k >= settle[i]) out += to[i] ?? '';
-            else if (k < settle[i] * .35 && from[i]) out += from[i];
-            else out += (to[i] === ' ' || from[i] === ' ') ? ' ' : set[(Math.random() * set.length) | 0];
-        }
-        el.textContent = out;
-        if (k < 1) el._morph = requestAnimationFrame(step); else { el.textContent = to; el.classList.remove('morphing'); }
-    };
-    el._morph = requestAnimationFrame(step);
+// language switch: old and new words melt into each other (blur + alpha threshold = a liquid morph)
+function morphText(el, to) {
+    const from = el.textContent;
+    if (from === to) return;
+    clearTimeout(el._morph);
+    el.classList.add('mt-box');
+    el.innerHTML = `<span class="mt mt-old">${esc(from)}</span><span class="mt mt-new">${esc(to)}</span>`;
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('mt-go')));
+    el._morph = setTimeout(() => { el.classList.remove('mt-box', 'mt-go'); el.textContent = to; }, 760);
 }
+const BADGES = ['lang-en', 'lang-ar', 'name-en', 'name-ar'].map(n => `/book/ui/${n}.webp?v=2`);
+BADGES.forEach(src => { const i = new Image(); i.src = src; });          // ready before anyone switches
 function swapBadge(img, src) {
     if (img.getAttribute('src') === src) return;
-    img.classList.add('morph-out');
-    setTimeout(() => { img.src = src; img.onload = () => { img.classList.remove('morph-out'); img.classList.add('morph-in'); setTimeout(() => img.classList.remove('morph-in'), 450); }; }, 260);
+    const ghost = img.cloneNode(); ghost.removeAttribute('id'); ghost.classList.add('badge-ghost');
+    img.parentNode.appendChild(ghost);
+    img.src = src; img.classList.remove('badge-in'); void img.offsetWidth; img.classList.add('badge-in');
+    ghost.classList.add('badge-out');
+    setTimeout(() => ghost.remove(), 600);
 }
 function renderUI(animate = false) {
     document.querySelectorAll('[data-t]').forEach(el => { const s = UI[el.dataset.t]; if (!s) return; if (animate) morphText(el, s[lang()]); else el.textContent = s[lang()]; });
@@ -654,7 +658,7 @@ $('#lang').addEventListener('click', () => {
     // the book's pages and cover blur out, repaint in the new language, and sharpen back in
     document.body.classList.add('lang-morph');
     $('#actions').classList.add('morph-in');
-    Promise.all([new Promise(r => setTimeout(r, 380))]).then(() => paintAll()).then(() => new Promise(r => setTimeout(r, 60))).then(() => {
+    Promise.all([new Promise(r => setTimeout(r, 300))]).then(() => paintAll(true)).then(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))).then(() => {
         document.body.classList.remove('lang-morph');
         setTimeout(() => $('#actions').classList.remove('morph-in'), 500);
     });

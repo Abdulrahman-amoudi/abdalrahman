@@ -228,19 +228,27 @@ html[dir="rtl"] .arrow img { transform: scaleX(-1); }
     .open-btn.pill { height: 44px; font-size: 1.02rem; }
 }
 
-/* language morph */
-.morphing { display: inline-block; filter: blur(.4px); }
-.name-badge, #langBadge { transition: filter .26s ease, opacity .26s ease, transform .26s ease; }
-.morph-out { filter: blur(6px) !important; opacity: 0; transform: scale(.92) rotate(-2deg); }
-.morph-in { animation: badgeIn .45s cubic-bezier(.2,.8,.2,1); }
-@keyframes badgeIn { from { filter: blur(6px); opacity: 0; transform: scale(1.08) rotate(2deg); } to { filter: none; opacity: 1; transform: none; } }
-#scene { transition: opacity .8s var(--ease), filter .3s ease; }
-body.lang-morph #scene { filter: blur(8px) saturate(.8) !important; opacity: .75; }
 .actions.morph-in { animation: badgeIn .5s cubic-bezier(.2,.8,.2,1); }
 
 /* controls leave gently when the book closes */
 .controls { transition: opacity .5s var(--ease), transform .5s var(--ease); }
 .controls.leaving { opacity: 0; transform: translateY(10px); pointer-events: none; }
 .invite { transition: opacity .7s var(--ease) .2s, transform .7s var(--ease) .2s; }
-body.lang-morph #scene { transition: filter .38s ease, opacity .38s ease; }
-#scene { transition: opacity .8s var(--ease), filter .45s ease; }
+
+/* liquid text morph between languages */
+.mt-box { display: inline-grid; filter: url(#threshold); }
+.mt-box .mt { grid-area: 1 / 1; justify-self: center; white-space: nowrap; transition: filter .7s cubic-bezier(.4,0,.2,1), opacity .7s cubic-bezier(.4,0,.2,1); }
+.mt-box .mt-new { filter: blur(10px); opacity: 0; }
+.mt-box.mt-go .mt-old { filter: blur(10px); opacity: 0; }
+.mt-box.mt-go .mt-new { filter: blur(0); opacity: 1; }
+/* badges cross-melt */
+.mark, .lang { position: relative; }
+.lang { position: absolute; }
+.badge-ghost { position: absolute; inset: 0; pointer-events: none; }
+.badge-out { animation: badgeOut .5s cubic-bezier(.4,0,.2,1) forwards; }
+.badge-in { animation: badgeIn2 .5s cubic-bezier(.4,0,.2,1); }
+@keyframes badgeOut { to { opacity: 0; filter: blur(8px); transform: scale(.96); } }
+@keyframes badgeIn2 { from { opacity: 0; filter: blur(8px); transform: scale(1.04); } to { opacity: 1; filter: none; transform: none; } }
+/* the book fades on the compositor while it repaints */
+#scene { transition: opacity .8s var(--ease); }
+body.lang-morph #scene { opacity: 0; transition: opacity .28s ease; }
