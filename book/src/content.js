@@ -49,13 +49,13 @@ export const PAGES = [
             id: '06-motion', bg: '#5b3f74', ink: '#f6effa', side: 'left', focus: '78% 50%',
             title: { en: 'Stories that move.', ar: 'قصص بتتحرك.' },
             body: { en: 'Short reels written, animated and sound-designed by hand. A pixel detective for Vibe Todos, a loyalty reel for Dumbbell Gym.', ar: 'ريلز قصيرة بكتبها وبحرّكها وبعمل صوتها بإيدي. محقق بكسل لـ Vibe Todos، وريل الالتزام لدمبل جيم.' },
-            links: [{ en: 'Watch the reels', ar: 'شوف الريلز', href: '/#motion' }],
+            links: [{ en: 'Watch the reels', ar: 'شوف الريلز', href: '/work/#motion' }],
         },
         {
             id: '07-work', bg: '#f0d58c', ink: '#3a2d0c', side: 'right', focus: '22% 50%',
             title: { en: 'Things I’ve built.', ar: 'أشياء بنيتها.' },
             body: { en: 'A study app people use every day, my studio’s site and CRM, an ordering site for a café, a gym’s members system, and a pixel new tab for Chrome.', ar: 'تطبيق دراسة الناس بتستخدمه كل يوم، موقع ونظام الاستوديو تبعي، موقع طلبات لكافيه، نظام مشتركين لجيم، وصفحة تاب جديد بكسل لكروم.' },
-            links: [{ en: 'See the work', ar: 'شوف الشغل', href: '/#work' }, { en: 'Vibe Todos', ar: 'Vibe Todos', href: 'https://to-do-virid-beta.vercel.app', ghost: true }],
+            links: [{ en: 'See the work', ar: 'شوف الشغل', href: '/work/#work' }, { en: 'Vibe Todos', ar: 'Vibe Todos', href: 'https://to-do-virid-beta.vercel.app', ghost: true }],
         },
         {
             id: '08-hello-again', bg: '#efe6d4', ink: '#2b241b', side: 'left', focus: '78% 50%',

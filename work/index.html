@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-time="night">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Abdalrahman Amoudi: websites, AI systems and videos from Amman</title>
+<meta name="description" content="Abdalrahman Amoudi builds websites, AI systems and motion videos from Amman, Jordan. BTEC IT student and founder of Wajha.">
+<meta property="og:title" content="Abdalrahman Amoudi">
+<meta property="og:description" content="Websites, AI systems and videos, from a small room in Amman.">
+<meta property="og:image" content="/assets/img/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0d0f1c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 8 8%22 shape-rendering=%22crispEdges%22%3E%3Crect width=%228%22 height=%228%22 fill=%22%230d0f1c%22/%3E%3Cpath d=%22M2 1h4v1H2zM1 2h6v2H1zM2 4h4v3H2z%22 fill=%22%23ff8a2a%22/%3E%3C/svg%3E">
+<link rel="preload" href="/assets/fonts/readex-pro-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+<script>
+  // pick day or night before paint: saved choice, otherwise the hour in Amman
+  (function () {
+    var d = document.documentElement, t = null, l = null;
+    try { t = localStorage.getItem('ab-time'); l = localStorage.getItem('ab-lang'); } catch (e) {}
+    if (!t) {
+      var h = +new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hour12: false, timeZone: 'Asia/Amman' }).format(new Date());
+      t = (h >= 6 && h < 18) ? 'day' : 'night';
+    }
+    d.dataset.time = t;
+    if (l === 'ar') { d.lang = 'ar'; d.dir = 'rtl'; }
+  })();
+</script>
+</head>
+<body>
+<a class="skip" href="#work" data-i18n="skip">Skip to the work</a>
+
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader-inner">
+    <canvas class="loader-walker" id="walker" width="36" height="53"></canvas>
+    <div class="loader-bar"><i id="loaderFill"></i></div>
+    <p data-i18n="loading">Opening the room</p>
+  </div>
+</div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="#top" aria-label="Abdalrahman, back to top">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span data-i18n="name">Abdalrahman</span>
+  </a>
+  <nav class="nav-links" aria-label="Sections">
+    <a href="#work" data-i18n="nav.work">Work</a>
+    <a href="#crafts" data-i18n="nav.crafts">What I do</a>
+    <a href="#motion" data-i18n="nav.motion">Motion</a>
+    <a href="#about" data-i18n="nav.about">About</a>
+  </nav>
+  <div class="nav-tools">
+    <button class="tool" id="timeBtn" type="button" aria-pressed="false">
+      <svg class="px-ico ico-sun" viewBox="0 0 16 16" aria-hidden="true"><path d="M7 1h2v2H7zM7 13h2v2H7zM1 7h2v2H1zM13 7h2v2h-2zM3 3h2v2H3zM11 3h2v2h-2zM3 11h2v2H3zM11 11h2v2h-2zM6 5h4v1h1v4h-1v1H6v-1H5V6h1z"/></svg>
+      <svg class="px-ico ico-moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2h3v1H7v1H6v2H5v4h1v2h1v1h2v1h3v1H6v-1H4v-1H3v-2H2V6h1V4h1V3h2z"/></svg>
+      <span class="tool-label" id="timeLabel">Day</span>
+    </button>
+    <button class="tool" id="langBtn" type="button" lang="ar">عربي</button>
+    <a class="tool tool-cta" href="#contact" data-i18n="nav.contact">Get in touch</a>
+  </div>
+</header>
+
+<main id="top">
+  <!-- HERO: the room itself -->
+  <section class="hero" aria-labelledby="heroTitle">
+    <h1 id="heroTitle" class="hero-title">
+      <span class="line"><span data-i18n="hero.l1">I build websites, AI systems</span></span>
+      <span class="line"><span data-i18n="hero.l2">and videos, from a small</span></span>
+      <span class="line"><span data-i18n="hero.l3">room in Amman.</span></span>
+    </h1>
+    <div class="hero-copy">
+      <p class="hero-sub" data-i18n="hero.sub">I’m Abdalrahman, a BTEC IT student and the founder of Wajha. This is my actual room, drawn in pixels. Click anything in it.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#work" data-i18n="hero.cta">See the work</a>
+        <a class="btn btn-ghost" href="/room/" data-i18n="hero.room">Open the room full screen</a>
+      </div>
+    </div>
+    <figure class="room-frame">
+      <div class="room-window">
+        <iframe id="room" title="Abdalrahman’s pixel room. Walk with WASD or the arrow keys and click objects to read about them." loading="eager" tabindex="0"></iframe>
+        <button class="room-focus" id="roomFocus" type="button" data-i18n="hero.play">Click to walk around</button>
+      </div>
+      <figcaption class="room-caption">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span data-i18n="hero.caption">My room, live. WASD or arrows to walk, E or click to use things.</span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- the four crafts, scrolling -->
+  <div class="band" aria-hidden="true">
+    <div class="band-track" id="bandTrack"></div>
+  </div>
+
+  <!-- WORK -->
+  <section class="section work" id="work" aria-labelledby="workTitle">
+    <div class="section-head">
+      <h2 id="workTitle" data-i18n="work.title">Selected work</h2>
+      <p data-i18n="work.intro">Client sites, a study app people actually use, and a few things I built because I needed them.</p>
+      <div class="carousel-controls">
+        <span class="counter" id="workCounter">1 / 5</span>
+        <button class="round" id="workPrev" type="button" aria-label="Previous project"><svg class="px-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M9 3h2v2H9v2H7v2h2v2h2v2H9v-2H7V9H5V7h2V5h2z"/></svg></button>
+        <button class="round" id="workNext" type="button" aria-label="Next project"><svg class="px-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h2v2h2v2h2v2H9v2H7v2H5v-2h2V9h2V7H7V5H5z"/></svg></button>
+      </div>
+    </div>
+    <ol class="work-track" id="workTrack" aria-label="Projects"></ol>
+  </section>
+
+  <!-- CRAFTS -->
+  <section class="section crafts" id="crafts" aria-labelledby="craftsTitle">
+    <div class="section-head">
+      <h2 id="craftsTitle" data-i18n="crafts.title">What I do, in the order I fell into it</h2>
+    </div>
+    <ol class="craft-list" id="craftList"></ol>
+  </section>
+
+  <!-- MOTION -->
+  <section class="section motion" id="motion" aria-labelledby="motionTitle">
+    <div class="section-head">
+      <h2 id="motionTitle" data-i18n="motion.title">Motion</h2>
+      <p data-i18n="motion.intro">I write, animate and sound-design short reels. Every frame of these is drawn in code, no stock footage.</p>
+    </div>
+    <div class="reels">
+      <figure class="reel">
+        <div class="reel-screen">
+          <video src="/assets/video/vibe-todos-reel.mp4" poster="/assets/img/poster-vibe.webp" playsinline muted loop preload="none"></video>
+          <button class="reel-sound" type="button" data-i18n-aria="motion.sound" aria-label="Play with sound"><svg class="px-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 6h3v4H1zM4 5h1v6H4zM5 4h1v8H5zM6 3h1v10H6zM9 5h1v1H9zM10 6h1v4h-1zM9 10h1v1H9zM12 3h1v1h-1zM13 4h1v8h-1zM12 12h1v1h-1z"/></svg></button>
+        </div>
+        <figcaption>
+          <b data-i18n="motion.r1.t">The Case of the Missing Focus</b>
+          <span data-i18n="motion.r1.d">Launch reel for Vibe Todos. A pixel detective, 35 seconds, English voice.</span>
+        </figcaption>
+      </figure>
+      <figure class="reel">
+        <div class="reel-screen">
+          <video src="/assets/video/dumbbell-loyalty-reel.mp4" poster="/assets/img/poster-gym.webp" playsinline muted loop preload="none"></video>
+          <button class="reel-sound" type="button" data-i18n-aria="motion.sound" aria-label="Play with sound"><svg class="px-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 6h3v4H1zM4 5h1v6H4zM5 4h1v8H5zM6 3h1v10H6zM9 5h1v1H9zM10 6h1v4h-1zM9 10h1v1H9zM12 3h1v1h-1zM13 4h1v8h-1zM12 12h1v1h-1z"/></svg></button>
+        </div>
+        <figcaption>
+          <b data-i18n="motion.r2.t">Three months, no gaps</b>
+          <span data-i18n="motion.r2.d">Loyalty offer for Dumbbell Gym. Motion graphics and sound design, Jordanian Arabic voice.</span>
+        </figcaption>
+      </figure>
+      <div class="reels-note">
+        <p data-i18n="motion.more">More reels go up on Wajha’s Instagram first.</p>
+        <a class="link" href="https://www.instagram.com/wajiha.jo/" target="_blank" rel="noopener">@wajiha.jo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="section process" id="process" aria-labelledby="processTitle">
+    <div class="section-head">
+      <h2 id="processTitle" data-i18n="process.title">How a project goes</h2>
+    </div>
+    <ol class="steps" id="steps"></ol>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="section about" id="about" aria-labelledby="aboutTitle">
+    <div class="about-art" aria-hidden="true">
+      <img src="/assets/img/abud.png" alt="" width="150" height="294">
+    </div>
+    <div class="about-copy">
+      <h2 id="aboutTitle" data-i18n="about.title">About</h2>
+      <p data-i18n="about.p1">I’m a BTEC International Level 3 IT student in Amman. I take three things seriously: video, AI and networks. I also build websites and apps, mostly through Wajha, the small studio I started in 2025 for shops and businesses here.</p>
+      <p data-i18n="about.p2">I like making things that feel made by a person: pixel art drawn cell by cell, sound effects instead of stock music, and interfaces that work properly in Arabic and English.</p>
+      <dl class="facts">
+        <div><dt data-i18n="about.f1k">Based in</dt><dd data-i18n="about.f1v">Amman, Jordan</dd></div>
+        <div><dt data-i18n="about.f2k">Studying</dt><dd data-i18n="about.f2v">BTEC International Level 3 IT</dd></div>
+        <div><dt data-i18n="about.f3k">English</dt><dd data-i18n="about.f3v">C1, about IELTS 7.5</dd></div>
+        <div><dt data-i18n="about.f4k">Works in</dt><dd data-i18n="about.f4v">Arabic and English</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact" aria-labelledby="contactTitle">
+    <h2 id="contactTitle" data-i18n="contact.title">Got something to build?</h2>
+    <p data-i18n="contact.p">A website, a system for your shop, a reel, or a network that needs sorting out. Send me a message and tell me what it’s for.</p>
+    <div class="contact-actions">
+      <a class="btn btn-primary btn-big" href="https://wa.me/962781912998" target="_blank" rel="noopener" data-i18n="contact.wa">Message me on WhatsApp</a>
+      <a class="btn btn-ghost btn-big" href="https://www.instagram.com/abdalrahman__amoudi/" target="_blank" rel="noopener" data-i18n="contact.ig">Instagram</a>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p data-i18n="foot.made">Built by hand in Amman. Every pixel on this page was placed on purpose.</p>
+  <nav class="foot-links" aria-label="Elsewhere">
+    <a href="https://github.com/Abdulrahman-amoudi" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://wajha-chi.vercel.app" target="_blank" rel="noopener" data-i18n="foot.wajha">Wajha studio</a>
+    <a href="https://www.instagram.com/wajiha.jo/" target="_blank" rel="noopener">@wajiha.jo</a>
+    <a href="/room/" data-i18n="foot.room">The room, full screen</a>
+    <a href="/" data-i18n="foot.book">The book</a>
+  </nav>
+</footer>
+
+<dialog class="case" id="case" aria-labelledby="caseTitle">
+  <div class="case-inner">
+    <button class="case-close round" id="caseClose" type="button" data-i18n-aria="case.close" aria-label="Close"><svg class="px-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h2v1h1v1h1v1h2V5h1V4h1V3h2v2h-1v1h-1v1H9v2h1v1h1v1h1v2h-2v-1H9v-1H7v1H6v1H5v1H3v-2h1v-1h1v-1h1V9h1V7H6V6H5V5H4V4H3z"/></svg></button>
+    <div id="caseBody"></div>
+  </div>
+</dialog>
+
+<script src="/assets/site.js"></script>
+</body>
+</html>

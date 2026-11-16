@@ -183,10 +183,17 @@ const SCENES = {
       <path d="M842 720l6-40h30l6 40z" fill="${t.pale}"/><path d="M856 672c-4-14 6-20 2-34M870 674c-4-14 6-20 2-34" stroke="${t.pale}" stroke-width="4" fill="none" stroke-linecap="round"/>`,
 };
 
+// where each scene's floor starts and which tone it is, so the wall and floor can run full width
+const FLOORS = { '01-hello': [660, 'mid'], '02-video': [650, 'dark'], '03-ai': [680, 'mid'], '04-networks': [700, 'dark'], '05-web': [720, 'mid'], '06-motion': [660, 'dark'], '07-work': [700, 'mid'], '08-hello-again': [620, 'mid'] };
+const S = .64, OX = 24; // the scene is scaled into the art half, standing on the same floor
+
 export function sceneSvg(p) {
     const t = tones(p.bg);
     const draw = SCENES[p.id] || SCENES['01-hello'];
-    const g = draw(t);
+    const [fy, fk] = FLOORS[p.id] || [660, 'mid'];
+    const floorY = 940 - (940 - fy) * S;
+    const g = `<rect width="1600" height="940" fill="${t.b}"/><rect y="${floorY}" width="1600" height="${940 - floorY}" fill="${t[fk]}"/>
+      <g transform="translate(${OX} ${940 * (1 - S)}) scale(${S})">${draw(t)}</g>`;
     const flip = p.side === 'left';
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 940" width="1600" height="940">${flip ? `<g transform="translate(1600 0) scale(-1 1)">${g}</g>` : g}</svg>`;
 }

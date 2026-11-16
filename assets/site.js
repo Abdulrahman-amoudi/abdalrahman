@@ -54,6 +54,7 @@
         'foot.made': { en: 'Built by hand in Amman. Every pixel on this page was placed on purpose.', ar: 'معمول باليد بعمّان. كل بكسل بهالصفحة محطوط عن قصد.' },
         'foot.wajha': { en: 'Wajha studio', ar: 'استوديو واجهة' },
         'foot.room': { en: 'The room, full screen', ar: 'الغرفة بشاشة كاملة' },
+        'foot.book': { en: 'The book', ar: 'الكتاب' },
         'case.close': { en: 'Close', ar: 'إغلاق' },
         day: { en: 'Day', ar: 'نهار' }, night: { en: 'Night', ar: 'ليل' },
         toDay: { en: 'Switch to day', ar: 'حوّل للنهار' }, toNight: { en: 'Switch to night', ar: 'حوّل لليل' },
