@@ -216,8 +216,8 @@ const backBoard = new Mesh(new BoxGeometry(PW + .03, PH + .04, .016), boardMat);
 backBoard.position.set(PW / 2 + .005, 0, .008); backBoard.castShadow = backBoard.receiveShadow = true; book.add(backBoard);
 const leftBoard = new Mesh(new BoxGeometry(PW + .03, PH + .04, .016), boardMat);
 leftBoard.position.set(-PW / 2 - .005, 0, .008); leftBoard.receiveShadow = true; book.add(leftBoard);
-const spine = new Mesh(new BoxGeometry(.03, PH + .04, .03), spineMat);
-spine.position.set(0, 0, .015); spine.castShadow = true; book.add(spine);
+const spine = new Mesh(new BoxGeometry(.022, PH + .04, .018), spineMat);
+spine.position.set(-.006, 0, .009); spine.castShadow = true; book.add(spine);
 const blockR = new Mesh(new BoxGeometry(PW, PH, 1), paperEdge); blockR.castShadow = blockR.receiveShadow = true; book.add(blockR);
 const blockL = new Mesh(new BoxGeometry(PW, PH, 1), paperEdge); blockL.castShadow = blockL.receiveShadow = true; book.add(blockL);
 
@@ -332,7 +332,7 @@ function frame(now) {
         if (reduced) { P = target; V = 0; }
         else {
             // critically damped spring toward the target page
-            const k = 34, c = 2 * Math.sqrt(k);
+            const k = opened && P >= .999 ? 13 : 7, c = 2 * Math.sqrt(k) * 1.02;   // slow, heavy paper; the cover is slower still
             V += ((target - P) * k - V * c) * dt;
             P += V * dt;
             if (Math.abs(target - P) < .0004 && Math.abs(V) < .0004) { P = target; V = 0; }
