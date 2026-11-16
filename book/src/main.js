@@ -26,6 +26,7 @@ const SW = 2048, SH = Math.round(SW * 9.4 / 16), HW = SW / 2;
 const PW = 1, PH = SH / HW;         // one page is 1 unit wide
 const D = 0.0055;                   // sheet spacing in the stack
 const SEG = 72;
+const COVER_T = .0176;   // cover board thickness: printed cover on one face, inside page on the other
 
 /* ------------------------------------------------------------- the painter */
 let textInCanvas = innerWidth > 760;
@@ -343,7 +344,8 @@ class Sheet {
         this.base = geo.attributes.position.array.slice();
         this.geo = geo;
         this.front = new Mesh(geo, new MeshStandardMaterial({ side: FrontSide, roughness: 1, metalness: 0 }));
-        this.back = new Mesh(geo, new MeshStandardMaterial({ side: BackSide, roughness: 1, metalness: 0 }));
+        this.backGeo = i === 0 ? geo.clone() : geo;
+        this.back = new Mesh(this.backGeo, new MeshStandardMaterial({ side: BackSide, roughness: 1, metalness: 0 }));
         for (const m of [this.front, this.back]) { m.castShadow = true; m.receiveShadow = true; book.add(m); }
         this.turn = -1;
     }
@@ -383,6 +385,12 @@ class Sheet {
             pos[v * 3] = xs[k]; pos[v * 3 + 1] = by; pos[v * 3 + 2] = z0 + zs[k];
         }
         this.geo.attributes.position.needsUpdate = true;
+        if (this.i === 0) {
+            // the inside of the cover lies on the board's far face (the cover is rigid, so one normal fits all)
+            const bp = this.backGeo.attributes.position.array, nx = -Math.sin(theta), nz = Math.cos(theta), off = COVER_T;
+            for (let v = 0; v < pos.length; v += 3) { bp[v] = pos[v] - nx * off; bp[v + 1] = pos[v + 1]; bp[v + 2] = pos[v + 2] - nz * off; }
+            this.backGeo.attributes.position.needsUpdate = true; this.backGeo.computeVertexNormals();
+        }
         this.geo.computeVertexNormals();
     }
 }
@@ -424,7 +432,7 @@ function layout() {
     sheets.forEach((s, i) => {
         const turn = Math.max(0, Math.min(1, P - i));
         const zR = .016 + (N - i) * D + .001, zL = .016 + i * D + .001;
-        s.pose(turn, zR, zL);
+        s.pose(turn, zR, i === 0 ? zL - COVER_T : zL);
     });
     // paper blocks fill the space under the top resting sheet on each side, so the stacks read as thick
     const topR = Number.isInteger(P) ? P : Math.floor(P) + 1;            // first sheet lying flat on the right
@@ -436,8 +444,8 @@ function layout() {
     // the cover's board is glued to the cover and swings over with it
     {
         const t0 = Math.max(0, Math.min(1, P)), a = t0 * Math.PI, lift = Math.sin(a);
-        const zR = .016 + N * D + .001, zL = .016 + .001;
-        const z0 = zR + (zL - zR) * t0 + lift * .02, sMid = PW / 2 + .005, off = .0088;
+        const zR = .016 + N * D + .001, zL = .016 + .001 - COVER_T;
+        const z0 = zR + (zL - zR) * t0 + lift * .02, sMid = PW / 2 + .005, off = COVER_T / 2;
         leftBoard.position.set(Math.cos(a) * sMid + Math.sin(a) * off, 0, z0 + Math.sin(a) * sMid - Math.cos(a) * off);
         leftBoard.rotation.y = -a;
         leftBoard.visible = true;
