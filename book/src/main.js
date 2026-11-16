@@ -378,7 +378,7 @@ function layout() {
     book.rotation.z = 0;
     // camera: tilted over the closed book, straight down over the open one
     const aspect = camera.aspect, vfov = camera.fov * Math.PI / 180;
-    const fitW = (PW * (1 + o)) * 1.12 / view.wFrac, fitH = PH * 1.16 / view.hFrac;
+    const fitW = (PW * (1 + o)) * (innerWidth <= 760 ? 1.03 : 1.12) / view.wFrac, fitH = PH * 1.16 / view.hFrac;
     const dist = Math.max(fitH / 2 / Math.tan(vfov / 2), fitW / 2 / (Math.tan(vfov / 2) * aspect));
     const closedDist = dist * 1.3;
     const d = closedDist + (dist - closedDist) * o;

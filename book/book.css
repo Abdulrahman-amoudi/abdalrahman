@@ -165,3 +165,23 @@ html[dir="rtl"] .arrow img { transform: scaleX(-1); }
     .lang { top: 18px; inset-inline-end: 12px; }
     .arrow img { width: 64px; }
 }
+
+/* sit the painted badges in the night: same dim, warm grade as the backdrop, soft ground shadow */
+.mark, .lang, .arrow, .painted::before { --grade: brightness(.86) saturate(.88) sepia(.12); }
+.mark .name-badge, .lang img, .arrow img { filter: brightness(.86) saturate(.88) sepia(.12); }
+.mark, .lang, .arrow { filter: drop-shadow(0 6px 6px rgba(8,10,8,.45)) drop-shadow(0 0 14px rgba(255,190,120,.10)); }
+.painted::before { filter: url(#rough) brightness(.88) saturate(.9) sepia(.1); }
+@media (max-width: 760px) {
+    .top { padding: 10px 12px 0; }
+    .mark .name-badge { width: 112px; }
+    .lang img { width: 60px; }
+    .lang { top: 14px; inset-inline-end: 10px; }
+    .arrow img { width: 50px; }
+    .dots { gap: 6px; }
+    .dots button { width: 9px; height: 9px; }
+    .controls { gap: 10px; }
+    .open-btn { height: 44px; padding: 2px 20px 0; font-size: 1.02rem; }
+    .open-btn svg { width: 16px; height: 16px; }
+    .hint { font-size: .8rem; }
+    .invite { gap: 10px; }
+}
