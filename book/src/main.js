@@ -9,6 +9,7 @@ import {
     PCFSoftShadowMap, FrontSide, BackSide, Color, Vector3, ACESFilmicToneMapping, RepeatWrapping,
 } from 'three';
 import { PAGES, UI } from './content.js';
+import { sceneSvg } from './scenes.js';
 
 const root = document.documentElement;
 const $ = s => document.querySelector(s);
@@ -39,19 +40,7 @@ function shade(hex, k) {
     const c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.max(0, Math.min(255, Math.round(k > 0 ? v + (255 - v) * k : v * (1 + k)))));
     return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
 }
-function placeholderSvg(p) {
-    const b = p.bg, dark = shade(b, -.28), deep = shade(b, -.5), light = shade(b, .35), pale = shade(b, .6);
-    const g = `<rect width="1600" height="940" fill="${b}"/><rect y="640" width="1600" height="300" fill="${dark}"/>
-      <path d="M120 640V250a170 170 0 0 1 340 0v390z" fill="${pale}"/><path d="M140 640V255a150 150 0 0 1 300 0v385z" fill="${light}"/>
-      <rect x="140" y="470" width="300" height="170" fill="${shade(b, .15)}"/><rect x="285" y="105" width="10" height="535" fill="${pale}"/><rect x="140" y="400" width="300" height="10" fill="${pale}"/>
-      <circle cx="360" cy="230" r="34" fill="${pale}"/><rect x="420" y="600" width="420" height="22" rx="6" fill="${deep}"/>
-      <rect x="455" y="622" width="18" height="230" fill="${deep}"/><rect x="790" y="622" width="18" height="230" fill="${deep}"/>
-      <rect x="560" y="470" width="220" height="140" rx="10" fill="${deep}"/><rect x="574" y="484" width="192" height="102" rx="4" fill="${light}"/>
-      <circle cx="510" cy="430" r="44" fill="${deep}"/><path d="M460 600c0-90 20-140 50-140s50 50 50 140z" fill="${deep}"/>`;
-    const flip = p.side === 'left';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 940" width="1600" height="940">${flip ? `<g transform="translate(1600 0) scale(-1 1)">${g}</g>` : g}</svg>`;
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-}
+const placeholderSvg = p => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sceneSvg(p));
 function cover(ctx, img, w, h, focus = '50% 50%') {
     const [fx, fy] = focus.split(' ').map(v => parseFloat(v) / 100);
     const s = Math.max(w / img.width, h / img.height);
@@ -290,7 +279,8 @@ async function paintAll() {
 }
 
 /* -------------------------------------------------------------- motion */
-let P = 0, V = 0, target = 0, dragging = false, needsRender = true, opened = false;
+let P = 0, V = 0, target = 0, dragging = false, needsRender = true, opened = false, opening = null;
+const easeInOut = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 const smooth = x => x * x * (3 - 2 * x);
 
 function layout() {
@@ -328,11 +318,16 @@ function layout() {
 let last = performance.now(), idle = 0;
 function frame(now) {
     const dt = Math.min(.05, (now - last) / 1000); last = now;
-    if (!dragging) {
+    if (opening) {
+        // the first open is a planned move, not a spring: the cover swings while the camera glides over
+        const k = Math.min(1, (now - opening) / 1800);
+        P = easeInOut(k); V = 0;
+        if (k >= 1) { opening = null; P = target = 1; }
+    } else if (!dragging) {
         if (reduced) { P = target; V = 0; }
         else {
             // critically damped spring toward the target page
-            const k = opened && P >= .999 ? 13 : 7, c = 2 * Math.sqrt(k) * 1.02;   // slow, heavy paper; the cover is slower still
+            const k = 13, c = 2 * Math.sqrt(k) * 1.02;   // slow, heavy paper
             V += ((target - P) * k - V * c) * dt;
             P += V * dt;
             if (Math.abs(target - P) < .0004 && Math.abs(V) < .0004) { P = target; V = 0; }
@@ -396,7 +391,7 @@ function open() {
     document.body.classList.add('is-open');
     ctrls.hidden = false;
     target = 1;
-    history.replaceState(null, '', '#read');
+    if (!reduced) opening = performance.now();
 }
 $('#openBtn').addEventListener('click', open);
 $('#prev').addEventListener('click', () => go(Math.round(target) - 1));
@@ -456,7 +451,6 @@ renderUI();
 resize();
 paintAll().then(() => {
     $('#stage').classList.add('ready');
-    if (location.hash === '#read') { opened = true; invite.classList.add('gone'); document.body.classList.add('is-open'); ctrls.hidden = false; P = target = 1; }
 });
 requestAnimationFrame(frame);
 
