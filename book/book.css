@@ -227,3 +227,13 @@ html[dir="rtl"] .arrow img { transform: scaleX(-1); }
     .pill { height: 40px; padding: 2px 16px 0; font-size: .95rem; }
     .open-btn.pill { height: 44px; font-size: 1.02rem; }
 }
+
+/* language morph */
+.morphing { display: inline-block; filter: blur(.4px); }
+.name-badge, #langBadge { transition: filter .26s ease, opacity .26s ease, transform .26s ease; }
+.morph-out { filter: blur(6px) !important; opacity: 0; transform: scale(.92) rotate(-2deg); }
+.morph-in { animation: badgeIn .45s cubic-bezier(.2,.8,.2,1); }
+@keyframes badgeIn { from { filter: blur(6px); opacity: 0; transform: scale(1.08) rotate(2deg); } to { filter: none; opacity: 1; transform: none; } }
+#scene { transition: opacity .8s var(--ease), filter .3s ease; }
+body.lang-morph #scene { filter: blur(8px) saturate(.8) !important; opacity: .75; }
+.actions.morph-in { animation: badgeIn .5s cubic-bezier(.2,.8,.2,1); }

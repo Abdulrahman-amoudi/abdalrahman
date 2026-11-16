@@ -319,7 +319,7 @@ const spine = new Mesh(new BoxGeometry(.02, PH - .02, .016), spineMat);
 spine.position.set(-.012, 0, .008); spine.castShadow = true; book.add(spine);
 // a ribbon bookmark hanging out of the closed book
 const bookmark = new Mesh(new PlaneGeometry(.045, .2), new MeshStandardMaterial({ color: '#b8461f', roughness: 1, side: 2 }));
-bookmark.position.set(PW * .72, -PH / 2 - .07, .02); bookmark.rotation.z = .12; bookmark.castShadow = true; book.add(bookmark);
+bookmark.position.set(PW * .72, -PH / 2 - .07, .02); bookmark.rotation.z = .12; bookmark.castShadow = true; bookmark.visible = false;
 const blockR = new Mesh(new BoxGeometry(PW, PH, 1), paperEdge); blockR.castShadow = blockR.receiveShadow = true; book.add(blockR);
 const blockL = new Mesh(new BoxGeometry(PW, PH, 1), paperEdge); blockL.castShadow = blockL.receiveShadow = true; book.add(blockL);
 
@@ -420,7 +420,6 @@ function layout() {
     blockR.visible = hR > .0003; blockR.scale.z = Math.max(.0001, hR); blockR.position.set(PW / 2, 0, .016 + hR / 2);
     blockL.visible = hL > .0003; blockL.scale.z = Math.max(.0001, hL); blockL.position.set(-PW / 2, 0, .016 + hL / 2);
     leftBoard.visible = P > .985;
-    bookmark.visible = P < .04;
     spine.visible = P > .02;
     // the book slides so whatever is open sits in the middle
     book.position.x = (rtl() ? 1 : -1) * PW / 2 * (1 - o);
@@ -514,12 +513,38 @@ function go(i) {
     const span = Math.abs(target - P);
     turn = { from: P, to: target, t0: performance.now(), dur: Math.min(2200, 1150 + 260 * (span - 1)) };
 }
-function renderUI() {
-    document.querySelectorAll('[data-t]').forEach(el => { const s = UI[el.dataset.t]; if (s) el.textContent = s[lang()]; });
+// language switch: every letter scrambles through the new alphabet and settles into the new word
+const GLYPHS = { en: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', ar: 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي' };
+function morphText(el, to, dur = 900) {
+    const from = el.textContent, set = GLYPHS[lang()], n = Math.max(from.length, to.length), t0 = performance.now();
+    const settle = Array.from({ length: n }, (_, i) => (i / n) * .55 + Math.random() * .3);
+    cancelAnimationFrame(el._morph);
+    el.classList.add('morphing');
+    const step = now => {
+        const k = Math.min(1, (now - t0) / dur);
+        let out = '';
+        for (let i = 0; i < n; i++) {
+            if (k >= settle[i]) out += to[i] ?? '';
+            else if (k < settle[i] * .35 && from[i]) out += from[i];
+            else out += (to[i] === ' ' || from[i] === ' ') ? ' ' : set[(Math.random() * set.length) | 0];
+        }
+        el.textContent = out;
+        if (k < 1) el._morph = requestAnimationFrame(step); else { el.textContent = to; el.classList.remove('morphing'); }
+    };
+    el._morph = requestAnimationFrame(step);
+}
+function swapBadge(img, src) {
+    if (img.getAttribute('src') === src) return;
+    img.classList.add('morph-out');
+    setTimeout(() => { img.src = src; img.onload = () => { img.classList.remove('morph-out'); img.classList.add('morph-in'); setTimeout(() => img.classList.remove('morph-in'), 450); }; }, 260);
+}
+function renderUI(animate = false) {
+    document.querySelectorAll('[data-t]').forEach(el => { const s = UI[el.dataset.t]; if (!s) return; if (animate) morphText(el, s[lang()]); else el.textContent = s[lang()]; });
     const ar = lang() === 'ar';
-    $('#langBadge').src = ar ? '/book/ui/lang-en.webp?v=2' : '/book/ui/lang-ar.webp?v=2';
+    const setImg = (img, src) => animate ? swapBadge(img, src) : (img.src = src);
+    setImg($('#langBadge'), ar ? '/book/ui/lang-en.webp?v=2' : '/book/ui/lang-ar.webp?v=2');
     $('#lang').setAttribute('aria-label', ar ? 'English' : 'العربية');
-    $('#nameBadge').src = ar ? '/book/ui/name-ar.webp?v=2' : '/book/ui/name-en.webp?v=2';
+    setImg($('#nameBadge'), ar ? '/book/ui/name-ar.webp?v=2' : '/book/ui/name-en.webp?v=2');
     $('#lang').lang = lang() === 'ar' ? 'en' : 'ar';
     document.title = t(UI.docTitle);
     dots.innerHTML = PAGES.map((p, i) => `<button type="button" style="--c:${p.bg}" aria-label="${esc(t(UI.page))} ${num(i + 1)}: ${esc(t(p.title))}"></button>`).join('');
@@ -587,7 +612,14 @@ $('#lang').addEventListener('click', () => {
     const next = lang() === 'ar' ? 'en' : 'ar';
     root.lang = next; root.dir = next === 'ar' ? 'rtl' : 'ltr';
     try { localStorage.setItem('ab-lang', next); } catch (e) {}
-    renderUI(); paintAll();
+    renderUI(true);
+    // the book's pages and cover blur out, repaint in the new language, and sharpen back in
+    document.body.classList.add('lang-morph');
+    $('#actions').classList.add('morph-in');
+    Promise.all([paintAll(), new Promise(r => setTimeout(r, 320))]).then(() => {
+        document.body.classList.remove('lang-morph');
+        setTimeout(() => $('#actions').classList.remove('morph-in'), 500);
+    });
 });
 
 /* --------------------------------------------------------------- start */
