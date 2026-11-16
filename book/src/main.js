@@ -70,24 +70,26 @@ async function paintSpread(p, i) {
         if (lang() === 'ar') { ctx.save(); ctx.translate(SW, 0); ctx.scale(-1, 1); cover(ctx, art, SW, SH, p.focus); ctx.restore(); }
         else cover(ctx, art, SW, SH, p.focus);
     }
-    if (textInCanvas) {
+    {
+        // phones get the words in the page too, lettered larger and in a wider column
+        const k = textInCanvas ? 1 : 1.35;
         const ar = lang() === 'ar', side = sideFor(p);
         ctx.direction = ar ? 'rtl' : 'ltr';
         ctx.textAlign = ar ? 'right' : 'left';
         ctx.textBaseline = 'alphabetic';
         // a column in the empty half, kept well away from the fold and the edge
-        const colW = SW * .34, colX = side === 'right' ? SW * .585 : SW * .075;
+        const colW = SW * (k > 1 ? .41 : .34), colX = side === 'right' ? SW * (k > 1 ? .55 : .585) : SW * (k > 1 ? .045 : .075);
         const x = ar ? colX + colW : colX;
         const titleText = p.emboss && !ar ? t(p.title).toUpperCase() : t(p.title);
-        let size = p.emboss ? (ar ? 132 : 138) : (ar ? 104 : 112);
+        let size = Math.round((p.emboss ? (ar ? 132 : 138) : (ar ? 104 : 112)) * k);
         let tl;
         for (; size > 60; size -= 4) {
             ctx.font = `700 ${size}px "Readex Pro"`;
             tl = wrap(ctx, titleText, colW);
-            if (tl.length <= 3 && tl.every(l => ctx.measureText(l).width <= colW * 1.02)) break;
+            if (tl.length <= (k > 1 ? 4 : 3) && tl.every(l => ctx.measureText(l).width <= colW * 1.02)) break;
         }
         const lh = size * (ar ? 1.28 : 1.0);
-        const bodySize = ar ? 40 : 38, blh = ar ? 66 : 58;
+        const bodySize = Math.round((ar ? 40 : 38) * k), blh = Math.round((ar ? 66 : 58) * k);
         ctx.font = `400 ${bodySize}px "Readex Pro"`;
         const bl = wrap(ctx, t(p.body), colW * .94);
         const gap = p.emboss ? 54 : 96;
@@ -373,14 +375,14 @@ function layout() {
     bookmark.visible = P < .04;
     // the book slides so whatever is open sits in the middle
     book.position.x = -PW / 2 * (1 - o);
-    book.rotation.z = -0.28 * (1 - o);
+    book.rotation.z = 0;
     // camera: tilted over the closed book, straight down over the open one
     const aspect = camera.aspect, vfov = camera.fov * Math.PI / 180;
     const fitW = (PW * (1 + o)) * 1.12 / view.wFrac, fitH = PH * 1.16 / view.hFrac;
     const dist = Math.max(fitH / 2 / Math.tan(vfov / 2), fitW / 2 / (Math.tan(vfov / 2) * aspect));
     const closedDist = dist * 1.3;
     const d = closedDist + (dist - closedDist) * o;
-    const tilt = (1 - o) * 1.18;                    // low, near eye level, like the painting behind it
+    const tilt = 0;                                  // straight on, like a painted book standing against the wall
     camera.position.set(0, -Math.sin(tilt) * d, Math.cos(tilt) * d);
     camera.lookAt(new Vector3(0, 0, 0));
     // the closed book rests low, on the rooftop floor of the painting; it rises to centre as it opens

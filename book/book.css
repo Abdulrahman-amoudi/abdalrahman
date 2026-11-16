@@ -157,3 +157,11 @@ body:not(.is-open) .hint { visibility: hidden; }
 .arrow:not(:disabled):active { transform: scale(.95); }
 html[dir="rtl"] .arrow img { transform: scaleX(-1); }
 .top { padding-top: 12px; }
+
+@media (max-width: 760px) {
+    .caption, body.is-open .caption { display: none; }
+    .mark .name-badge { width: 132px; }
+    .lang img { width: 74px; }
+    .lang { top: 18px; inset-inline-end: 12px; }
+    .arrow img { width: 64px; }
+}
