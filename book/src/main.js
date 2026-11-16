@@ -129,6 +129,26 @@ async function paintSpread(p, i) {
 async function paintCover(back) {
     const c = document.createElement('canvas'); c.width = HW; c.height = SH;
     const ctx = c.getContext('2d');
+    // his painted cover, used as is; English gets its own lettering on the same ribbon
+    const front = back ? null : await loadImage('/book/art/cover-front.webp');
+    if (front) {
+        ctx.drawImage(front, 0, 0, HW, SH);
+        if (lang() !== 'ar') {
+            const g = ctx.createRadialGradient(HW / 2, 205, 40, HW / 2, 205, 360);
+            g.addColorStop(0, 'rgba(240,226,196,1)'); g.addColorStop(.8, 'rgba(240,226,196,1)'); g.addColorStop(1, 'rgba(240,226,196,0)');
+            ctx.save(); ctx.beginPath(); ctx.roundRect(170, 108, HW - 340, 205, 30); ctx.clip();
+            ctx.fillStyle = g; ctx.fillRect(0, 0, HW, SH);
+            for (let k = 0; k < 220; k++) { ctx.fillStyle = `rgba(170,140,95,${Math.random() * .06})`; ctx.beginPath(); ctx.ellipse(170 + Math.random() * (HW - 340), 108 + Math.random() * 205, 8 + Math.random() * 26, 2 + Math.random() * 5, Math.random() * 3, 0, 7); ctx.fill(); }
+            ctx.restore();
+            const lines = t(UI.coverLines);
+            let size = 88; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            do { ctx.font = `800 ${size}px "Baloo Bhaijaan 2", "Readex Pro"`; size -= 2; } while (Math.max(...lines.map(l => ctx.measureText(l).width)) > 600 && size > 40);
+            ctx.fillStyle = '#3a2a20';
+            lines.forEach((l, i) => ctx.fillText(l, HW / 2, 210 + (i - (lines.length - 1) / 2) * size * 1.02));
+            ctx.textBaseline = 'alphabetic';
+        }
+        return c;
+    }
     const art = back ? null : await loadImage('/book/art/cover.webp');
     ctx.fillStyle = '#1e3a2f'; ctx.fillRect(0, 0, HW, SH);
     if (art) cover(ctx, art, HW, SH, '50% 100%');
@@ -373,6 +393,7 @@ function layout() {
     blockL.visible = hL > .0003; blockL.scale.z = Math.max(.0001, hL); blockL.position.set(-PW / 2, 0, .016 + hL / 2);
     leftBoard.visible = P > .02;
     bookmark.visible = P < .04;
+    spine.visible = P > .02;
     // the book slides so whatever is open sits in the middle
     book.position.x = -PW / 2 * (1 - o);
     book.rotation.z = 0;
@@ -380,13 +401,13 @@ function layout() {
     const aspect = camera.aspect, vfov = camera.fov * Math.PI / 180;
     const fitW = (PW * (1 + o)) * (innerWidth <= 760 ? 1.03 : 1.12) / view.wFrac, fitH = PH * 1.16 / view.hFrac;
     const dist = Math.max(fitH / 2 / Math.tan(vfov / 2), fitW / 2 / (Math.tan(vfov / 2) * aspect));
-    const closedDist = dist * 1.3;
+    const closedDist = dist * 1.7;
     const d = closedDist + (dist - closedDist) * o;
     const tilt = 0;                                  // straight on, like a painted book standing against the wall
     camera.position.set(0, -Math.sin(tilt) * d, Math.cos(tilt) * d);
     camera.lookAt(new Vector3(0, 0, 0));
     // the closed book rests low, on the rooftop floor of the painting; it rises to centre as it opens
-    if (view.W) { camera.setViewOffset(view.W, view.H, 0, -view.dy - (1 - o) * .08 * view.H, view.W, view.H); }
+    if (view.W) { camera.setViewOffset(view.W, view.H, 0, -view.dy - (1 - o) * -.02 * view.H, view.W, view.H); }
 }
 
 let last = performance.now(), idle = 0;
