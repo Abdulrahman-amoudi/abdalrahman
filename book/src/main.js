@@ -257,6 +257,8 @@ class Sheet {
         const theta = turn * Math.PI;
         const lift = Math.sin(turn * Math.PI);
         const curl = lift * 0.95;                       // how much the free edge trails behind
+        // the page bows up as it lifts, then its edge trails as it falls; blend the two so nothing snaps at the top
+        const m = Math.min(1, Math.max(0, (turn - .2) / .6)), bow = -0.35 + 1.35 * m * m * (3 - 2 * m);
         const z0 = zRight + (zLeft - zRight) * turn + lift * .02;
         // walk along the page from the spine, bending as we go
         const xs = new Float32Array(SEG + 1), zs = new Float32Array(SEG + 1);
@@ -264,7 +266,7 @@ class Sheet {
         for (let k = 0; k <= SEG; k++) {
             xs[k] = x; zs[k] = z;
             const s = k / SEG;
-            let a = theta - curl * Math.pow(s, 1.7) * (theta < Math.PI / 2 ? -0.35 : 1) * (1 - Math.abs(.5 - turn) * .6);
+            let a = theta - curl * Math.pow(s, 1.7) * bow * (1 - Math.abs(.5 - turn) * .6);
             a = Math.max(0, Math.min(Math.PI, a));
             const step = PW / SEG;
             x += Math.cos(a) * step; z += Math.sin(a) * step;
