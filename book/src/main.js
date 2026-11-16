@@ -126,32 +126,38 @@ async function paintSpread(p, i) {
 async function paintCover(back) {
     const c = document.createElement('canvas'); c.width = HW; c.height = SH;
     const ctx = c.getContext('2d');
-    const g = ctx.createRadialGradient(HW * .4, SH * .25, 40, HW * .5, SH * .5, HW * .9);
-    g.addColorStop(0, '#3b3b40'); g.addColorStop(1, '#151517');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, HW, SH);
-    // linen grain
-    for (let k = 0; k < 2600; k++) { ctx.fillStyle = `rgba(255,255,255,${Math.random() * .03})`; ctx.fillRect(Math.random() * HW, Math.random() * SH, 1 + Math.random() * 3, 1); }
+    const art = back ? null : await loadImage('/book/art/cover.webp');
+    ctx.fillStyle = '#1e3a2f'; ctx.fillRect(0, 0, HW, SH);
+    if (art) cover(ctx, art, HW, SH, '50% 100%');
+    else {
+        const g = ctx.createRadialGradient(HW * .5, SH * .3, 40, HW * .5, SH * .5, HW * .95);
+        g.addColorStop(0, '#2b4a3d'); g.addColorStop(1, '#152a22');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, HW, SH);
+    }
+    // cloth grain over everything, so art and board read as one cover
+    for (let k = 0; k < 3200; k++) { ctx.fillStyle = `rgba(255,255,255,${Math.random() * .025})`; ctx.fillRect(Math.random() * HW, Math.random() * SH, 1 + Math.random() * 3, 1); }
     if (back) return c;
     const ar = lang() === 'ar';
     ctx.textAlign = 'center'; ctx.direction = ar ? 'rtl' : 'ltr';
+    const top = SH * .085;
     const abud = await loadImage('/assets/img/abud.png');
-    ctx.font = '700 40px "Readex Pro"'; ctx.fillStyle = '#e9e5dc';
-    const brand = t(UI.brand);
-    const bw = ctx.measureText(brand).width;
-    if (abud) { ctx.imageSmoothingEnabled = false; ctx.drawImage(abud, HW / 2 - bw / 2 - 42, SH * .27 - 40, 24, 47); }
-    ctx.fillText(brand, HW / 2 + 12, SH * .27);
-    ctx.fillStyle = '#ff7a2f'; ctx.fillText('.', HW / 2 + 12 + bw / 2 + 12, SH * .27);
+    ctx.font = '700 34px "Readex Pro"'; ctx.fillStyle = '#e9e1cf';
+    const brand = t(UI.brand), bw = ctx.measureText(brand).width;
+    if (abud) { ctx.imageSmoothingEnabled = false; ctx.drawImage(abud, HW / 2 - bw / 2 - 34, top - 32, 20, 39); }
+    ctx.fillText(brand, HW / 2 + 10, top);
+    ctx.fillStyle = '#ff7a2f'; ctx.fillText('.', HW / 2 + 10 + bw / 2 + 10, top);
     const lines = t(UI.coverLines);
-    ctx.font = `700 ${ar ? 120 : 132}px "Readex Pro"`;
-    let y = SH * .5 - (lines.length - 1) * 70;
+    const size = ar ? 104 : 112;
+    ctx.font = `700 ${size}px "Readex Pro"`;
+    let y = SH * .2;
     for (const line of lines) {
-        ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillText(line, HW / 2 + 3, y + 8);
-        ctx.fillStyle = '#8f8b84'; ctx.fillText(line, HW / 2, y + 3);
-        ctx.fillStyle = '#ece8df'; ctx.fillText(line, HW / 2, y);
-        y += ar ? 160 : 140;
+        ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 8;
+        ctx.fillStyle = '#c9bfa8'; ctx.fillText(line, HW / 2, y + 4); ctx.restore();
+        ctx.fillStyle = '#f4ecdc'; ctx.fillText(line, HW / 2, y);
+        y += size * (ar ? 1.3 : 1.04);
     }
-    ctx.font = '400 40px "Readex Pro"'; ctx.fillStyle = '#b8b4ac';
-    ctx.fillText(t(UI.coverSub), HW / 2, y + 20);
+    ctx.font = '400 34px "Readex Pro"'; ctx.fillStyle = 'rgba(244,236,220,.75)';
+    ctx.fillText(t(UI.coverSub), HW / 2, y + 6);
     return c;
 }
 function half(canvas, right) {
@@ -203,6 +209,19 @@ function deskTexture() {
 const desk = new Mesh(new PlaneGeometry(24, 24), new MeshStandardMaterial({ map: deskTexture(), roughness: .92, metalness: 0 }));
 desk.receiveShadow = true;
 scene.add(desk);
+// the painted desk sits on top, wide enough to fill every view of the book
+loadImage('/book/art/desk.webp').then(img => {
+    if (!img) return;
+    const tex = new CanvasTexture((() => { const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; c.getContext('2d').drawImage(img, 0, 0); return c; })());
+    tex.colorSpace = SRGBColorSpace; tex.anisotropy = 8;
+    const W = 7.2, H = W * img.height / img.width;
+    const top = new Mesh(new PlaneGeometry(W, H), new MeshStandardMaterial({ map: tex, roughness: .95, metalness: 0 }));
+    top.position.set(0, .2, .0005); top.receiveShadow = true;
+    scene.add(top);
+    scene.background = new Color('#17110d');
+    desk.material.color = new Color('#3a2a20');
+    needsRender = true;
+});
 
 const book = new Group();
 scene.add(book);
@@ -316,13 +335,14 @@ function layout() {
     book.rotation.z = -0.28 * (1 - o);
     // camera: tilted over the closed book, straight down over the open one
     const aspect = camera.aspect, vfov = camera.fov * Math.PI / 180;
-    const fitW = (PW * (1 + o)) * 1.12, fitH = PH * 1.16;
+    const fitW = (PW * (1 + o)) * 1.12 / view.wFrac, fitH = PH * 1.16 / view.hFrac;
     const dist = Math.max(fitH / 2 / Math.tan(vfov / 2), fitW / 2 / (Math.tan(vfov / 2) * aspect));
     const closedDist = dist * 1.55;
     const d = closedDist + (dist - closedDist) * o;
     const tilt = (1 - o) * 0.95;                    // radians off vertical
-    camera.position.set(0, -Math.sin(tilt) * d, Math.cos(tilt) * d);
-    camera.lookAt(new Vector3(0, 0, 0));
+    const aim = -0.42 * (1 - o);                   // look a little past the closed book so it sits higher
+    camera.position.set(0, aim - Math.sin(tilt) * d, Math.cos(tilt) * d);
+    camera.lookAt(new Vector3(0, aim, 0));
 }
 
 let last = performance.now(), idle = 0;
@@ -354,10 +374,17 @@ function frame(now) {
 
 }
 
+// the canvas fills the window; the book is framed inside the stage area between header and controls
+const view = { wFrac: 1, hFrac: 1 };
 function resize() {
-    const r = canvas.parentElement.getBoundingClientRect();
-    renderer.setSize(r.width, r.height, false);
-    camera.aspect = r.width / r.height; camera.updateProjectionMatrix();
+    const W = innerWidth, H = innerHeight;
+    renderer.setSize(W, H, false);
+    camera.aspect = W / H;
+    const r = $('#stage').getBoundingClientRect();
+    view.hFrac = Math.max(.4, r.height / H); view.wFrac = 1;
+    const dy = (r.top + r.height / 2) - H / 2;          // stage centre below the window centre
+    camera.setViewOffset(W, H, 0, -dy, W, H);
+    camera.updateProjectionMatrix();
     const nowText = innerWidth > 760;
     if (nowText !== textInCanvas) paintAll();
     needsRender = true;
@@ -459,7 +486,7 @@ $('#lang').addEventListener('click', () => {
 renderUI();
 resize();
 paintAll().then(() => {
-    $('#stage').classList.add('ready');
+    $('#stage').classList.add('ready'); document.body.classList.add('ready');
 });
 requestAnimationFrame(frame);
 
