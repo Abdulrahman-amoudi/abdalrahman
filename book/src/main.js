@@ -58,6 +58,12 @@ function wrap(ctx, text, maxW) {
     if (line) lines.push(line);
     return lines;
 }
+const rtl = () => lang() === 'ar';
+const ICONS = {
+    web: '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="4" width="15" height="12" rx="2.5"/><path d="M2.5 7.5h15M5 5.8h.01M7 5.8h.01"/></svg>',
+    reel: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8v4M7 6v8M10 4v12M13 6v8M16 8v4"/></svg>',
+    chat: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 15.5l1-3A6 6 0 1 1 7.5 15z"/></svg>',
+};
 const sideFor = p => (lang() === 'ar' ? (p.side === 'left' ? 'right' : 'left') : p.side);
 
 async function paintSpread(p, i) {
@@ -220,6 +226,13 @@ async function paintCover(back) {
 function half(canvas, right) {
     const c = document.createElement('canvas'); c.width = HW; c.height = SH;
     c.getContext('2d').drawImage(canvas, right ? HW : 0, 0, HW, SH, 0, 0, HW, SH);
+    return roundOuter(c, right);
+}
+// soft rounded outer corners on every page, like real paper; the gutter edge stays straight
+function roundOuter(c, right) {
+    const ctx = c.getContext('2d'), r = 34;
+    ctx.save(); ctx.globalCompositeOperation = 'destination-in';
+    ctx.beginPath(); ctx.roundRect(0, 0, HW, SH, right ? [0, r, r, 0] : [r, 0, 0, r]); ctx.fill(); ctx.restore();
     return c;
 }
 
@@ -245,7 +258,7 @@ sun.position.set(2.2, 1.4, 3.6);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 Object.assign(sun.shadow.camera, { left: -2.5, right: 2.5, top: 2.5, bottom: -2.5, near: .5, far: 10 });
-sun.shadow.radius = 10; sun.shadow.blurSamples = 16; sun.shadow.bias = -0.0008;
+sun.shadow.radius = 18; sun.shadow.blurSamples = 16; sun.shadow.bias = -0.0008;
 scene.add(sun);
 scene.add(sun.target);
 
@@ -310,12 +323,13 @@ class Sheet {
         for (const m of [this.front, this.back]) { m.castShadow = true; m.receiveShadow = true; book.add(m); }
         this.turn = -1;
     }
-    setTextures(frontCanvas, backCanvas) {
-        const mk = c => { const tx = new CanvasTexture(c); tx.colorSpace = SRGBColorSpace; tx.anisotropy = 8; return tx; };
+    setTextures(frontCanvas, backCanvas, mirrored = false) {
+        const mk = c => { const tx = new CanvasTexture(c); tx.colorSpace = SRGBColorSpace; tx.anisotropy = 8; tx.wrapS = RepeatWrapping; return tx; };
         this.front.material.map?.dispose(); this.back.material.map?.dispose();
-        this.front.material.map = mk(frontCanvas);
-        // the back is seen mirrored, so flip its texture
-        const bt = mk(backCanvas); bt.wrapS = RepeatWrapping; bt.repeat.x = -1; this.back.material.map = bt;
+        // the back is seen mirrored, so flip its texture; a mirrored (right-hinged) book flips both again
+        const ft = mk(frontCanvas); ft.repeat.x = mirrored ? -1 : 1; this.front.material.map = ft;
+        const bt = mk(backCanvas); bt.repeat.x = mirrored ? 1 : -1; this.back.material.map = bt;
+        for (const m of [this.front.material, this.back.material]) m.alphaTest = .5;
         this.front.material.needsUpdate = this.back.material.needsUpdate = true;
     }
     pose(turn, zRight, zLeft) {
@@ -360,10 +374,12 @@ async function paintAll() {
     ]).catch(() => {});
     const spreads = await Promise.all(PAGES.map((p, i) => paintSpread(p, i)));
     const front = await paintCover(false), backC = await paintCover(true);
+    const r = rtl();
+    book.scale.x = r ? -1 : 1;
     sheets.forEach((s, i) => {
-        const f = i === 0 ? front : half(spreads[i - 1], true);
-        const b = i === N ? backC : half(spreads[i], false);
-        s.setTextures(f, b);
+        const f = i === 0 ? roundOuter(front, true) : half(spreads[i - 1], !r);
+        const b = i === N ? roundOuter(backC, false) : half(spreads[i], r);
+        s.setTextures(f, b, r);
     });
     needsRender = true;
 }
@@ -391,11 +407,11 @@ function layout() {
     const hL = topL >= 0 ? topL * D + .0002 : 0;
     blockR.visible = hR > .0003; blockR.scale.z = Math.max(.0001, hR); blockR.position.set(PW / 2, 0, .016 + hR / 2);
     blockL.visible = hL > .0003; blockL.scale.z = Math.max(.0001, hL); blockL.position.set(-PW / 2, 0, .016 + hL / 2);
-    leftBoard.visible = P > .02;
+    leftBoard.visible = P > .985;
     bookmark.visible = P < .04;
     spine.visible = P > .02;
     // the book slides so whatever is open sits in the middle
-    book.position.x = -PW / 2 * (1 - o);
+    book.position.x = (rtl() ? 1 : -1) * PW / 2 * (1 - o);
     book.rotation.z = 0;
     // camera: tilted over the closed book, straight down over the open one
     const aspect = camera.aspect, vfov = camera.fov * Math.PI / 180;
@@ -436,7 +452,7 @@ function frame(now) {
         // the closed book breathes on the desk
         book.position.z = opened ? 0 : Math.sin(now / 1100) * .012 + .012;
         const op = Math.min(1, P);
-        contact.position.x = PW / 2 * (1 - op) + .03; contact.scale.set(1 + op * 1.05, 1, 1);
+        contact.position.x = (rtl() ? -1 : 1) * (PW / 2 * (1 - op) + .03); contact.scale.set(1 + op * 1.05, 1, 1);
         layout(); renderer.render(scene, camera);
         layout.lastP = P; needsRender = false; idle = 0;
         onProgress();
@@ -477,7 +493,7 @@ function onProgress() {
     if (p) {
         cap.innerHTML = `<h2>${esc(t(p.title))}</h2><p>${esc(t(p.body))}</p>`;
         reading.textContent = `${t(p.title)}. ${t(p.body)}`;
-        $('#actions').innerHTML = (p.links || []).map(l => `<a class="painted ${l.ghost ? 'ghost' : ''}" style="${l.ghost ? '' : `--c:${p.bg};--t:${p.ink}`}" href="${l.href}" ${l.href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''}>${esc(l[lang()])}</a>`).join('');
+        $('#actions').innerHTML = (p.links || []).map(l => `<a class="pill ${l.tone || 'terracotta'}" href="${l.href}" ${l.href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''}>${esc(l[lang()])}${ICONS[l.icon] || ''}</a>`).join('');
     }
 }
 function go(i) {
@@ -489,9 +505,9 @@ function go(i) {
 function renderUI() {
     document.querySelectorAll('[data-t]').forEach(el => { const s = UI[el.dataset.t]; if (s) el.textContent = s[lang()]; });
     const ar = lang() === 'ar';
-    $('#langBadge').src = ar ? '/book/ui/lang-en.webp' : '/book/ui/lang-ar.webp';
+    $('#langBadge').src = ar ? '/book/ui/lang-en.webp?v=2' : '/book/ui/lang-ar.webp?v=2';
     $('#lang').setAttribute('aria-label', ar ? 'English' : 'العربية');
-    $('#nameBadge').src = ar ? '/book/ui/name-ar.webp' : '/book/ui/name-en.webp';
+    $('#nameBadge').src = ar ? '/book/ui/name-ar.webp?v=2' : '/book/ui/name-en.webp?v=2';
     $('#lang').lang = lang() === 'ar' ? 'en' : 'ar';
     document.title = t(UI.docTitle);
     dots.innerHTML = PAGES.map((p, i) => `<button type="button" style="--c:${p.bg}" aria-label="${esc(t(UI.page))} ${num(i + 1)}: ${esc(t(p.title))}"></button>`).join('');
@@ -515,7 +531,7 @@ $('#next').addEventListener('click', () => go(Math.round(target) + 1));
 
 addEventListener('keydown', e => {
     if (!opened) { if ((e.key === 'Enter' || e.key === ' ') && e.target === document.body) { e.preventDefault(); open(); } return; }
-    const fwd = 'ArrowRight', bwd = 'ArrowLeft';
+    const fwd = rtl() ? 'ArrowLeft' : 'ArrowRight', bwd = rtl() ? 'ArrowRight' : 'ArrowLeft';
     if (e.key === fwd || e.key === 'PageDown') { e.preventDefault(); go(Math.round(target) + 1); }
     if (e.key === bwd || e.key === 'PageUp') { e.preventDefault(); go(Math.round(target) - 1); }
     if (e.key === 'Home') go(1);
@@ -531,7 +547,7 @@ canvas.addEventListener('pointerdown', e => {
 });
 canvas.addEventListener('pointermove', e => {
     if (!dragging) return;
-    const w = canvas.clientWidth * .45, dir = -1;
+    const w = canvas.clientWidth * .45, dir = rtl() ? 1 : -1;
     const dx = e.clientX - sx;
     if (Math.abs(dx) > 4) moved = true;
     P = Math.max(1, Math.min(N, sP + dir * dx / w));
@@ -546,7 +562,7 @@ function release(e) {
         // a click: the right half turns forward, the left half turns back
         const r = canvas.getBoundingClientRect();
         const right = e.clientX > r.left + r.width / 2;
-        go(Math.round(P) + (right ? 1 : -1));
+        go(Math.round(P) + ((right !== rtl()) ? 1 : -1));
         return;
     }
     V = vel * .6;

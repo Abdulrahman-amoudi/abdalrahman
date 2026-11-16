@@ -89,7 +89,6 @@ body:not(.is-open) .actions { visibility: hidden; }
 .arrow svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 .arrow:disabled { opacity: .3; cursor: default; }
 html[dir="rtl"] .arrow svg { transform: scaleX(-1); }
-html[dir="rtl"] .controls { flex-direction: row-reverse; }
 .dots { display: flex; align-items: center; gap: 9px; }
 .dots button { width: 12px; height: 12px; padding: 0; border: 2px solid rgba(246,236,214,.55); border-radius: 50%; background: var(--c); opacity: .5; cursor: pointer; transition: transform .35s var(--ease), opacity .2s; }
 .dots button:hover { opacity: .9; }
@@ -192,3 +191,39 @@ html[dir="rtl"] .arrow img { transform: scaleX(-1); }
 .open-btn { filter: drop-shadow(0 7px 5px rgba(40,30,20,.38)); }
 .open-btn:hover { transform: translateY(-2px); }
 .invite p { color: #f1e6cc; }
+
+/* ---------- soft painterly pills: one style for every call to action ---------- */
+.pill {
+    --c: #D47E42; --t: #2a1a0e;
+    position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    height: 48px; padding: 3px 24px 0; border-radius: 999px; cursor: pointer; text-decoration: none;
+    font: 700 1.1rem/1 var(--story); color: var(--t);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .25 0 0 0 0 .2 0 0 0 0 .12 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23p)'/%3E%3C/svg%3E"), radial-gradient(130% 160% at 30% 20%, color-mix(in srgb, var(--c) 82%, #fff6e2), var(--c) 60%, color-mix(in srgb, var(--c) 88%, #1c1e18));
+    border: 1.5px solid color-mix(in srgb, var(--c) 62%, #1c1e18);
+    box-shadow: 0 6px 16px rgba(28, 30, 24, .16), inset 0 1px 0 rgba(255,250,235,.25);
+    transition: transform .22s var(--ease), box-shadow .22s var(--ease);
+    animation: none; filter: none;
+}
+.pill::before, .pill::after { content: none; }
+.pill:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 22px rgba(28, 30, 24, .2), inset 0 1px 0 rgba(255,250,235,.25); }
+.pill:active { transform: translateY(1px) scale(.98); box-shadow: 0 3px 8px rgba(28, 30, 24, .16); }
+.pill svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.pill.terracotta { --c: #D47E42; --t: #2a1a0e; }
+.pill.forest { --c: #2E4A36; --t: #f1ead6; }
+.pill.teal { --c: #234B52; --t: #f1ead6; }
+.pill.sage { --c: #DCE2CE; --t: #2E4A36; }
+.open-btn.pill { height: 52px; padding: 3px 28px 0; font-size: 1.2rem; }
+.open-btn.pill svg { fill: none; }
+.actions { gap: 12px; }
+/* his badges, sized to their new shapes */
+.mark .name-badge { width: 176px; }
+.lang img { width: 104px; }
+.arrow img { width: 54px; }
+.mark, .lang, .arrow { filter: drop-shadow(0 6px 10px rgba(28, 30, 24, .22)); }
+@media (max-width: 760px) {
+    .mark .name-badge { width: 124px; }
+    .lang img { width: 70px; }
+    .arrow img { width: 42px; }
+    .pill { height: 40px; padding: 2px 16px 0; font-size: .95rem; }
+    .open-btn.pill { height: 44px; font-size: 1.02rem; }
+}
