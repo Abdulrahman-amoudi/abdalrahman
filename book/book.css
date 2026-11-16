@@ -126,3 +126,8 @@ body:not(.is-open) .hint { visibility: hidden; }
 @keyframes flicker { 0%, 100% { opacity: 1; } 31% { opacity: .78; } 33% { opacity: 1; } 62% { opacity: .88; } 64% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
 .lang.painted { position: absolute; }
+/* the name, painted like the buttons: a hand-cut paper label */
+.mark.painted { --c: #f3e6c8; padding: 10px 22px 7px; margin-top: -4px; color: #2b241b; text-shadow: none; font-size: 1.4rem; }
+.mark.painted::before { border-radius: 26px 18px 28px 20px / 20px 28px 18px 26px; }
+.mark.painted i { color: #c0472a; }
+.invite strong { display: inline-block; color: #fbf1da; font-size: 1.25rem; text-shadow: 2px 2px 0 #3a2a1c, -1px -1px 0 #3a2a1c, 1px -1px 0 #3a2a1c, -1px 1px 0 #3a2a1c; filter: url(#rough); }
