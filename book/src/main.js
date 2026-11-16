@@ -5,7 +5,7 @@
    Build: npx esbuild book/src/main.js --bundle --minify --format=esm --outfile=book/book.js */
 import {
     WebGLRenderer, Scene, PerspectiveCamera, Group, Mesh, PlaneGeometry, BoxGeometry,
-    MeshStandardMaterial, MeshBasicMaterial, AdditiveBlending, ShadowMaterial, CanvasTexture, SRGBColorSpace, DirectionalLight, AmbientLight,
+    MeshStandardMaterial, MeshBasicMaterial, Shape, ExtrudeGeometry, AdditiveBlending, ShadowMaterial, CanvasTexture, SRGBColorSpace, DirectionalLight, AmbientLight,
     PCFSoftShadowMap, FrontSide, BackSide, Color, Vector3, ACESFilmicToneMapping, RepeatWrapping,
 } from 'three';
 import { RoundedBoxGeometry } from '/home/claude/threedl/package/examples/jsm/geometries/RoundedBoxGeometry.js';
@@ -59,6 +59,7 @@ function wrap(ctx, text, maxW) {
     return lines;
 }
 const rtl = () => lang() === 'ar';
+let mirrored = false;
 const ICONS = {
     web: '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="4" width="15" height="12" rx="2.5"/><path d="M2.5 7.5h15M5 5.8h.01M7 5.8h.01"/></svg>',
     reel: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8v4M7 6v8M10 4v12M13 6v8M16 8v4"/></svg>',
@@ -242,7 +243,7 @@ function half(canvas, right) {
 }
 // soft rounded outer corners on every page, like real paper; the gutter edge stays straight
 function roundOuter(c, right) {
-    const ctx = c.getContext('2d'), r = 34;
+    const ctx = c.getContext('2d'), r = 60;
     ctx.save(); ctx.globalCompositeOperation = 'destination-in';
     ctx.beginPath(); ctx.roundRect(0, 0, HW, SH, right ? [0, r, r, 0] : [r, 0, 0, r]); ctx.fill(); ctx.restore();
     return c;
@@ -310,18 +311,29 @@ const edgeTex = (() => {
 const paperEdge = new MeshStandardMaterial({ color: '#ffffff', map: edgeTex, roughness: 1 });
 const boardMat = new MeshStandardMaterial({ color: '#2a4433', roughness: 1 });
 const spineMat = new MeshStandardMaterial({ color: '#b98a45', roughness: .9 });
+// soft rounded slab (rounded corners in the page plane), centred like a box
+function roundedSlab(w, h, d, r) {
+    const sh = new Shape(), x = -w / 2, y = -h / 2;
+    sh.moveTo(x + r, y); sh.lineTo(x + w - r, y); sh.quadraticCurveTo(x + w, y, x + w, y + r);
+    sh.lineTo(x + w, y + h - r); sh.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    sh.lineTo(x + r, y + h); sh.quadraticCurveTo(x, y + h, x, y + h - r);
+    sh.lineTo(x, y + r); sh.quadraticCurveTo(x, y, x + r, y);
+    const g = new ExtrudeGeometry(sh, { depth: d, bevelEnabled: false, curveSegments: 10 });
+    g.translate(0, 0, -d / 2);
+    return g;
+}
 // back board under the right stack, front board travels with the cover (sheet 0)
-const backBoard = new Mesh(new RoundedBoxGeometry(PW + .03, PH + .04, .016, 3, .007), boardMat);
+const backBoard = new Mesh(roundedSlab(PW + .03, PH + .04, .016, .045), boardMat);
 backBoard.position.set(PW / 2 + .005, 0, .008); backBoard.castShadow = backBoard.receiveShadow = true; book.add(backBoard);
-const leftBoard = new Mesh(new RoundedBoxGeometry(PW + .03, PH + .04, .016, 3, .007), boardMat);
+const leftBoard = new Mesh(roundedSlab(PW + .03, PH + .04, .016, .045), boardMat);
 leftBoard.position.set(-PW / 2 - .005, 0, .008); leftBoard.receiveShadow = true; book.add(leftBoard);
 const spine = new Mesh(new BoxGeometry(.02, PH - .02, .016), spineMat);
 spine.position.set(-.012, 0, .008); spine.castShadow = true; book.add(spine);
 // a ribbon bookmark hanging out of the closed book
 const bookmark = new Mesh(new PlaneGeometry(.045, .2), new MeshStandardMaterial({ color: '#b8461f', roughness: 1, side: 2 }));
 bookmark.position.set(PW * .72, -PH / 2 - .07, .02); bookmark.rotation.z = .12; bookmark.castShadow = true; bookmark.visible = false;
-const blockR = new Mesh(new BoxGeometry(PW, PH, 1), paperEdge); blockR.castShadow = blockR.receiveShadow = true; book.add(blockR);
-const blockL = new Mesh(new BoxGeometry(PW, PH, 1), paperEdge); blockL.castShadow = blockL.receiveShadow = true; book.add(blockL);
+const blockR = new Mesh(roundedSlab(PW - .004, PH - .004, 1, .04), paperEdge); blockR.castShadow = blockR.receiveShadow = true; book.add(blockR);
+const blockL = new Mesh(roundedSlab(PW - .004, PH - .004, 1, .04), paperEdge); blockL.castShadow = blockL.receiveShadow = true; book.add(blockL);
 
 class Sheet {
     constructor(i) {
@@ -387,7 +399,7 @@ async function paintAll() {
     const spreads = await Promise.all(PAGES.map((p, i) => paintSpread(p, i)));
     const front = await paintCover(false), backC = await paintCover(true);
     const r = rtl();
-    book.scale.x = r ? -1 : 1;
+    mirrored = r; book.scale.x = r ? -1 : 1;
     sheets.forEach((s, i) => {
         const f = i === 0 ? roundOuter(front, true) : half(spreads[i - 1], !r);
         const b = i === N ? roundOuter(backC, false) : half(spreads[i], r);
@@ -397,7 +409,7 @@ async function paintAll() {
 }
 
 /* -------------------------------------------------------------- motion */
-let turn = null; let P = 0, V = 0, target = 0, dragging = false, needsRender = true, opened = false, opening = null;
+let turn = null, closing = null, intro = 0; let P = 0, V = 0, target = 0, dragging = false, needsRender = true, opened = false, opening = null;
 const easeInOutSine = x => -(Math.cos(Math.PI * x) - 1) / 2;
 const easeInOut = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 const smooth = x => x * x * (3 - 2 * x);
@@ -422,7 +434,7 @@ function layout() {
     leftBoard.visible = P > .985;
     spine.visible = P > .02;
     // the book slides so whatever is open sits in the middle
-    book.position.x = (rtl() ? 1 : -1) * PW / 2 * (1 - o);
+    book.position.x = (mirrored ? 1 : -1) * PW / 2 * (1 - o);
     book.rotation.z = 0;
     // camera: tilted over the closed book, straight down over the open one
     const aspect = camera.aspect, vfov = camera.fov * Math.PI / 180;
@@ -440,7 +452,12 @@ function layout() {
 let last = performance.now(), idle = 0;
 function frame(now) {
     const dt = Math.min(.05, (now - last) / 1000); last = now;
-    if (opening) {
+    if (closing) {
+        // closing: the pages fall back and the cover swings shut, the camera eases back out
+        const k = Math.min(1, (now - closing.t0) / closing.dur);
+        P = closing.from * (1 - easeInOut(k)); V = 0;
+        if (k >= 1) { closing = null; P = target = 0; finishClose(); }
+    } else if (opening) {
         // the first open is a planned move, not a spring: the cover swings while the camera glides over
         const k = Math.min(1, (now - opening) / 2400);
         P = easeInOut(k); V = 0;
@@ -462,8 +479,12 @@ function frame(now) {
     if (moving || needsRender || !opened) {
         // the closed book breathes on the desk
         book.position.z = opened ? 0 : Math.sin(now / 1100) * .012 + .012;
+        // arrival: the book rises gently into place the first time it is shown
+        const ik = intro ? Math.min(1, (now - intro) / 1300) : 0;
+        book.position.y = -(1 - easeInOut(ik)) * .35;
+        if (intro && ik >= 1) intro = 0;
         const op = Math.min(1, P);
-        contact.position.x = (rtl() ? -1 : 1) * (PW / 2 * (1 - op) + .03); contact.scale.set(1 + op * 1.05, 1, 1);
+        contact.position.x = 0; contact.scale.set(.78 + op * 1.25, .9, 1); contact.material.opacity = .55;
         layout(); renderer.render(scene, camera);
         layout.lastP = P; needsRender = false; idle = 0;
         onProgress();
@@ -489,6 +510,8 @@ function resize() {
     needsRender = true;
 }
 addEventListener('resize', resize);
+// the stage changes size when fonts and badges load: keep the camera framing in step
+new ResizeObserver(() => resize()).observe($('#stage'));
 
 /* ------------------------------------------------------------------ UI */
 const ctrls = $('#controls'), dots = $('#dots'), cap = $('#caption'), reading = $('#reading'), invite = $('#invite');
@@ -563,6 +586,21 @@ function open() {
     opening = performance.now();
 }
 $('#openBtn').addEventListener('click', open);
+function close() {
+    if (!opened || closing) return;
+    turn = null; opening = null; dragging = false;
+    ctrls.classList.add('leaving');
+    closing = { from: P, t0: performance.now(), dur: Math.min(2600, 1500 + 160 * P) };
+}
+function finishClose() {
+    opened = false;
+    document.body.classList.remove('is-open');
+    ctrls.hidden = true; ctrls.classList.remove('leaving');
+    invite.classList.remove('gone');
+    $('#actions').innerHTML = '';
+}
+// the name takes you back to the cover, without reloading the page
+$('.mark').addEventListener('click', e => { e.preventDefault(); close(); });
 $('#prev').addEventListener('click', () => go(Math.round(target) - 1));
 $('#next').addEventListener('click', () => go(Math.round(target) + 1));
 
@@ -616,7 +654,7 @@ $('#lang').addEventListener('click', () => {
     // the book's pages and cover blur out, repaint in the new language, and sharpen back in
     document.body.classList.add('lang-morph');
     $('#actions').classList.add('morph-in');
-    Promise.all([paintAll(), new Promise(r => setTimeout(r, 320))]).then(() => {
+    Promise.all([new Promise(r => setTimeout(r, 380))]).then(() => paintAll()).then(() => new Promise(r => setTimeout(r, 60))).then(() => {
         document.body.classList.remove('lang-morph');
         setTimeout(() => $('#actions').classList.remove('morph-in'), 500);
     });
@@ -626,6 +664,7 @@ $('#lang').addEventListener('click', () => {
 renderUI();
 resize();
 paintAll().then(() => {
+    resize(); intro = performance.now(); needsRender = true;
     $('#stage').classList.add('ready'); document.body.classList.add('ready');
 });
 requestAnimationFrame(frame);

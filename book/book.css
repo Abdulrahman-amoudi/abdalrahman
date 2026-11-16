@@ -237,3 +237,10 @@ html[dir="rtl"] .arrow img { transform: scaleX(-1); }
 #scene { transition: opacity .8s var(--ease), filter .3s ease; }
 body.lang-morph #scene { filter: blur(8px) saturate(.8) !important; opacity: .75; }
 .actions.morph-in { animation: badgeIn .5s cubic-bezier(.2,.8,.2,1); }
+
+/* controls leave gently when the book closes */
+.controls { transition: opacity .5s var(--ease), transform .5s var(--ease); }
+.controls.leaving { opacity: 0; transform: translateY(10px); pointer-events: none; }
+.invite { transition: opacity .7s var(--ease) .2s, transform .7s var(--ease) .2s; }
+body.lang-morph #scene { transition: filter .38s ease, opacity .38s ease; }
+#scene { transition: opacity .8s var(--ease), filter .45s ease; }
