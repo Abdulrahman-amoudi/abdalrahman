@@ -270,6 +270,9 @@ const leftBoard = new Mesh(new RoundedBoxGeometry(PW + .03, PH + .04, .016, 3, .
 leftBoard.position.set(-PW / 2 - .005, 0, .008); leftBoard.receiveShadow = true; book.add(leftBoard);
 const spine = new Mesh(new BoxGeometry(.02, PH - .02, .016), spineMat);
 spine.position.set(-.012, 0, .008); spine.castShadow = true; book.add(spine);
+// a ribbon bookmark hanging out of the closed book
+const bookmark = new Mesh(new PlaneGeometry(.045, .2), new MeshStandardMaterial({ color: '#b8461f', roughness: 1, side: 2 }));
+bookmark.position.set(PW * .72, -PH / 2 - .07, .02); bookmark.rotation.z = .12; bookmark.castShadow = true; book.add(bookmark);
 const blockR = new Mesh(new BoxGeometry(PW, PH, 1), paperEdge); blockR.castShadow = blockR.receiveShadow = true; book.add(blockR);
 const blockL = new Mesh(new BoxGeometry(PW, PH, 1), paperEdge); blockL.castShadow = blockL.receiveShadow = true; book.add(blockL);
 
@@ -367,6 +370,7 @@ function layout() {
     blockR.visible = hR > .0003; blockR.scale.z = Math.max(.0001, hR); blockR.position.set(PW / 2, 0, .016 + hR / 2);
     blockL.visible = hL > .0003; blockL.scale.z = Math.max(.0001, hL); blockL.position.set(-PW / 2, 0, .016 + hL / 2);
     leftBoard.visible = P > .02;
+    bookmark.visible = P < .04;
     // the book slides so whatever is open sits in the middle
     book.position.x = -PW / 2 * (1 - o);
     book.rotation.z = -0.28 * (1 - o);
@@ -374,13 +378,13 @@ function layout() {
     const aspect = camera.aspect, vfov = camera.fov * Math.PI / 180;
     const fitW = (PW * (1 + o)) * 1.12 / view.wFrac, fitH = PH * 1.16 / view.hFrac;
     const dist = Math.max(fitH / 2 / Math.tan(vfov / 2), fitW / 2 / (Math.tan(vfov / 2) * aspect));
-    const closedDist = dist * 1.75;
+    const closedDist = dist * 1.3;
     const d = closedDist + (dist - closedDist) * o;
     const tilt = (1 - o) * 1.18;                    // low, near eye level, like the painting behind it
     camera.position.set(0, -Math.sin(tilt) * d, Math.cos(tilt) * d);
     camera.lookAt(new Vector3(0, 0, 0));
     // the closed book rests low, on the rooftop floor of the painting; it rises to centre as it opens
-    if (view.W) { camera.setViewOffset(view.W, view.H, 0, -view.dy - (1 - o) * .14 * view.H, view.W, view.H); }
+    if (view.W) { camera.setViewOffset(view.W, view.H, 0, -view.dy - (1 - o) * .08 * view.H, view.W, view.H); }
 }
 
 let last = performance.now(), idle = 0;
