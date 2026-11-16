@@ -8,6 +8,7 @@ import {
     MeshStandardMaterial, MeshBasicMaterial, AdditiveBlending, ShadowMaterial, CanvasTexture, SRGBColorSpace, DirectionalLight, AmbientLight,
     PCFSoftShadowMap, FrontSide, BackSide, Color, Vector3, ACESFilmicToneMapping, RepeatWrapping,
 } from 'three';
+import { RoundedBoxGeometry } from '/home/claude/threedl/package/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { PAGES, UI } from './content.js';
 import { sceneSvg } from './scenes.js';
 
@@ -134,6 +135,16 @@ async function paintCover(back) {
         g.addColorStop(0, '#2b4a3d'); g.addColorStop(1, '#152a22');
         ctx.fillStyle = g; ctx.fillRect(0, 0, HW, SH);
     }
+    // worn, hand-painted edges: darker brushed rim so the cover reads as painted cloth, not a flat print
+    for (let k = 0; k < 900; k++) {
+        const side = k % 4, t = Math.random(), w = 6 + Math.random() * 40;
+        const x = side === 0 ? Math.random() * w : side === 1 ? HW - Math.random() * w : t * HW;
+        const y = side === 2 ? Math.random() * w : side === 3 ? SH - Math.random() * w : t * SH;
+        ctx.fillStyle = `rgba(8,20,14,${.04 + Math.random() * .08})`;
+        ctx.beginPath(); ctx.ellipse(x, y, 8 + Math.random() * 30, 3 + Math.random() * 8, Math.random() * 3, 0, 7); ctx.fill();
+    }
+    ctx.strokeStyle = 'rgba(232,190,110,.55)'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.roundRect(HW * .045, SH * .035, HW * .91, SH * .93, 18); ctx.stroke();
     // cloth grain over everything, so art and board read as one cover
     for (let k = 0; k < 3200; k++) { ctx.fillStyle = `rgba(255,255,255,${Math.random() * .025})`; ctx.fillRect(Math.random() * HW, Math.random() * SH, 1 + Math.random() * 3, 1); }
     if (back) return c;
@@ -215,13 +226,20 @@ scene.add(desk);
 const book = new Group();
 scene.add(book);
 
-const paperEdge = new MeshStandardMaterial({ color: '#e6decd', roughness: .95 });
-const boardMat = new MeshStandardMaterial({ color: '#19191b', roughness: .7 });
-const spineMat = new MeshStandardMaterial({ color: '#ff7a2f', roughness: .55 });
+// painted materials: cloth-green boards, warm gilt spine, page edges with soft hand-ruled lines
+const edgeTex = (() => {
+    const c = document.createElement('canvas'); c.width = 64; c.height = 256;
+    const g = c.getContext('2d'); g.fillStyle = '#efe2c4'; g.fillRect(0, 0, 64, 256);
+    for (let y = 0; y < 256; y += 3) { g.fillStyle = `rgba(120,95,60,${.06 + Math.random() * .1})`; g.fillRect(0, y, 64, 1); }
+    const t = new CanvasTexture(c); t.colorSpace = SRGBColorSpace; t.wrapS = t.wrapT = RepeatWrapping; return t;
+})();
+const paperEdge = new MeshStandardMaterial({ color: '#ffffff', map: edgeTex, roughness: 1 });
+const boardMat = new MeshStandardMaterial({ color: '#1f3c30', roughness: 1 });
+const spineMat = new MeshStandardMaterial({ color: '#b98a45', roughness: .9 });
 // back board under the right stack, front board travels with the cover (sheet 0)
-const backBoard = new Mesh(new BoxGeometry(PW + .03, PH + .04, .016), boardMat);
+const backBoard = new Mesh(new RoundedBoxGeometry(PW + .03, PH + .04, .016, 3, .007), boardMat);
 backBoard.position.set(PW / 2 + .005, 0, .008); backBoard.castShadow = backBoard.receiveShadow = true; book.add(backBoard);
-const leftBoard = new Mesh(new BoxGeometry(PW + .03, PH + .04, .016), boardMat);
+const leftBoard = new Mesh(new RoundedBoxGeometry(PW + .03, PH + .04, .016, 3, .007), boardMat);
 leftBoard.position.set(-PW / 2 - .005, 0, .008); leftBoard.receiveShadow = true; book.add(leftBoard);
 const spine = new Mesh(new BoxGeometry(.02, PH - .02, .016), spineMat);
 spine.position.set(-.012, 0, .008); spine.castShadow = true; book.add(spine);
@@ -235,8 +253,8 @@ class Sheet {
         geo.translate(PW / 2, 0, 0);
         this.base = geo.attributes.position.array.slice();
         this.geo = geo;
-        this.front = new Mesh(geo, new MeshStandardMaterial({ side: FrontSide, roughness: .86, metalness: 0 }));
-        this.back = new Mesh(geo, new MeshStandardMaterial({ side: BackSide, roughness: .86, metalness: 0 }));
+        this.front = new Mesh(geo, new MeshStandardMaterial({ side: FrontSide, roughness: 1, metalness: 0 }));
+        this.back = new Mesh(geo, new MeshStandardMaterial({ side: BackSide, roughness: 1, metalness: 0 }));
         for (const m of [this.front, this.back]) { m.castShadow = true; m.receiveShadow = true; book.add(m); }
         this.turn = -1;
     }
@@ -405,7 +423,7 @@ function onProgress() {
     if (p) {
         cap.innerHTML = `<h2>${esc(t(p.title))}</h2><p>${esc(t(p.body))}</p>`;
         reading.textContent = `${t(p.title)}. ${t(p.body)}`;
-        $('#actions').innerHTML = (p.links || []).map(l => `<a class="${l.ghost ? 'ghost' : ''}" style="${l.ghost ? '' : `--c:${p.bg};--t:${p.ink}`}" href="${l.href}" ${l.href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''}>${esc(l[lang()])}</a>`).join('');
+        $('#actions').innerHTML = (p.links || []).map(l => `<a class="painted ${l.ghost ? 'ghost' : ''}" style="${l.ghost ? '' : `--c:${p.bg};--t:${p.ink}`}" href="${l.href}" ${l.href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''}>${esc(l[lang()])}</a>`).join('');
     }
 }
 function go(i) {

@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&display=swap">
-<link rel="stylesheet" href="/book/book.css?v=39e911b2">
+<link rel="stylesheet" href="/book/book.css?v=88d0e7fe">
 <script>try{if(localStorage.getItem('ab-lang')==='ar'){document.documentElement.lang='ar';document.documentElement.dir='rtl'}}catch(e){}</script>
 </head>
 <body>
@@ -22,15 +22,21 @@
   <a class="mark" href="/" aria-label="Abdalrahman">
     <span data-t="brand">Abdalrahman</span><i>.</i>
   </a>
-  <button class="lang" id="lang" type="button">العربية</button>
+  <button class="lang painted" id="lang" type="button">العربية</button>
 </header>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="rough" x="-5%" y="-10%" width="110%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 <div class="alive" id="alive" aria-hidden="true"><div class="lantern"></div></div>
 
 <main class="stage" id="stage" aria-label="Interactive book">
   <canvas id="scene" aria-hidden="true"></canvas>
   <div class="invite" id="invite">
-    <button class="open-btn" id="openBtn" type="button">
+    <button class="open-btn painted" id="openBtn" type="button">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 3h5l2 1 2-1h5v10h-5l-2 1-2-1H1zM2 4v8h4l1.5.75V4.75L6 4zm12 0h-4l-1.5.75v8L10 12h4z"/></svg>
       <span data-t="open">Open the book</span>
     </button>
@@ -43,9 +49,9 @@
   <div class="caption" id="caption" aria-hidden="true"></div>
   <div class="actions" id="actions"></div>
   <nav class="controls" id="controls" aria-label="Book navigation" hidden>
-    <button class="arrow" id="prev" type="button" aria-label="Previous page"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg></button>
+    <button class="arrow painted" id="prev" type="button" aria-label="Previous page"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg></button>
     <div class="dots" id="dots"></div>
-    <button class="arrow" id="next" type="button" aria-label="Next page"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg></button>
+    <button class="arrow painted" id="next" type="button" aria-label="Next page"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg></button>
   </nav>
   <p class="hint" data-t="hint">Drag a page, use the arrow keys, or click either side.</p>
 </div>
@@ -57,6 +63,6 @@
   <a href="https://www.instagram.com/wajiha.jo/" target="_blank" rel="noopener">@wajiha.jo</a>
 </footer>
 
-<script type="module" src="/book/book.js?v=74e607d7"></script>
+<script type="module" src="/book/book.js?v=08d06779"></script>
 </body>
 </html>
