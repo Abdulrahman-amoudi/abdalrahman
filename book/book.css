@@ -125,3 +125,4 @@ body:not(.is-open) .hint { visibility: hidden; }
     mix-blend-mode: screen; animation: flicker 3.4s steps(1) infinite; }
 @keyframes flicker { 0%, 100% { opacity: 1; } 31% { opacity: .78; } 33% { opacity: 1; } 62% { opacity: .88; } 64% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+.lang.painted { position: absolute; }
