@@ -180,7 +180,7 @@ renderer.setClearColor(0x000000, 0);
 const camera = new PerspectiveCamera(30, 1, .05, 50);
 camera.up.set(0, 1, 0);
 
-scene.add(new AmbientLight('#aebcf0', .8));                 // cool night fill
+scene.add(new AmbientLight('#c4c6dc', .85));                 // cool night fill
 const moon = new DirectionalLight('#9fb4ff', .45); moon.position.set(-2, 3, 3); scene.add(moon);
 const sun = new DirectionalLight('#ffcf94', 2.5);               // warm lantern light from the right
 sun.position.set(2.2, 1.4, 3.6);
@@ -331,12 +331,13 @@ function layout() {
     const aspect = camera.aspect, vfov = camera.fov * Math.PI / 180;
     const fitW = (PW * (1 + o)) * 1.12 / view.wFrac, fitH = PH * 1.16 / view.hFrac;
     const dist = Math.max(fitH / 2 / Math.tan(vfov / 2), fitW / 2 / (Math.tan(vfov / 2) * aspect));
-    const closedDist = dist * 1.55;
+    const closedDist = dist * 1.75;
     const d = closedDist + (dist - closedDist) * o;
-    const tilt = (1 - o) * 0.95;                    // radians off vertical
-    const aim = -0.42 * (1 - o);                   // look a little past the closed book so it sits higher
-    camera.position.set(0, aim - Math.sin(tilt) * d, Math.cos(tilt) * d);
-    camera.lookAt(new Vector3(0, aim, 0));
+    const tilt = (1 - o) * 1.18;                    // low, near eye level, like the painting behind it
+    camera.position.set(0, -Math.sin(tilt) * d, Math.cos(tilt) * d);
+    camera.lookAt(new Vector3(0, 0, 0));
+    // the closed book rests low, on the rooftop floor of the painting; it rises to centre as it opens
+    if (view.W) { camera.setViewOffset(view.W, view.H, 0, -view.dy - (1 - o) * .2 * view.H, view.W, view.H); }
 }
 
 let last = performance.now(), idle = 0;
@@ -383,6 +384,7 @@ function resize() {
     const r = $('#stage').getBoundingClientRect();
     view.hFrac = Math.max(.4, r.height / H); view.wFrac = 1;
     const dy = (r.top + r.height / 2) - H / 2;          // stage centre below the window centre
+    view.W = W; view.H = H; view.dy = dy;
     camera.setViewOffset(W, H, 0, -dy, W, H);
     camera.updateProjectionMatrix();
     const nowText = innerWidth > 760;
