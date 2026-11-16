@@ -14,15 +14,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&display=swap">
-<link rel="stylesheet" href="/book/book.css?v=c5b86111">
+<link rel="preload" as="image" href="/book/ui/name-en.webp">
+<link rel="stylesheet" href="/book/book.css?v=7badd3f3">
 <script>try{if(localStorage.getItem('ab-lang')==='ar'){document.documentElement.lang='ar';document.documentElement.dir='rtl'}}catch(e){}</script>
 </head>
 <body>
 <header class="top">
-  <a class="mark ribbon" href="/" aria-label="Abdalrahman">
-    <span data-t="brand">Abdalrahman</span><i>.</i>
-  </a>
-  <button class="lang painted" id="lang" type="button">العربية</button>
+  <a class="mark" href="/" aria-label="Abdalrahman"><img class="name-badge" id="nameBadge" src="/book/ui/name-en.webp" alt="" width="200" height="115"></a>
+  <button class="lang" id="lang" type="button"><img id="langBadge" src="/book/ui/lang-ar.webp" alt="" width="110" height="67"></button>
 </header>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -53,14 +52,14 @@
   <div class="caption" id="caption" aria-hidden="true"></div>
   <div class="actions" id="actions"></div>
   <nav class="controls" id="controls" aria-label="Book navigation" hidden>
-    <button class="arrow painted" id="prev" type="button" aria-label="Previous page"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg></button>
+    <button class="arrow" id="prev" type="button" aria-label="Previous page"><img src="/book/ui/prev.webp" alt="" width="84" height="50"></button>
     <div class="dots" id="dots"></div>
-    <button class="arrow painted" id="next" type="button" aria-label="Next page"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg></button>
+    <button class="arrow" id="next" type="button" aria-label="Next page"><img src="/book/ui/next.webp" alt="" width="84" height="50"></button>
   </nav>
   <p class="hint" data-t="hint">Drag a page, use the arrow keys, or click either side.</p>
 </div>
 
 
-<script type="module" src="/book/book.js?v=1d600a80"></script>
+<script type="module" src="/book/book.js?v=d85f60b6"></script>
 </body>
 </html>

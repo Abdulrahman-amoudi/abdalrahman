@@ -465,7 +465,10 @@ function go(i) {
 }
 function renderUI() {
     document.querySelectorAll('[data-t]').forEach(el => { const s = UI[el.dataset.t]; if (s) el.textContent = s[lang()]; });
-    $('#lang').textContent = lang() === 'ar' ? 'English' : 'العربية';
+    const ar = lang() === 'ar';
+    $('#langBadge').src = ar ? '/book/ui/lang-en.webp' : '/book/ui/lang-ar.webp';
+    $('#lang').setAttribute('aria-label', ar ? 'English' : 'العربية');
+    $('#nameBadge').src = ar ? '/book/ui/name-ar.webp' : '/book/ui/name-en.webp';
     $('#lang').lang = lang() === 'ar' ? 'en' : 'ar';
     document.title = t(UI.docTitle);
     dots.innerHTML = PAGES.map((p, i) => `<button type="button" style="--c:${p.bg}" aria-label="${esc(t(UI.page))} ${num(i + 1)}: ${esc(t(p.title))}"></button>`).join('');
