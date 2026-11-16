@@ -128,13 +128,13 @@ body:not(.is-open) .hint { visibility: hidden; }
 .lang.painted { position: absolute; }
 /* the name: its own hand-lettering, painted in the book's colours with an ink outline */
 .mark span {
-    display: inline-block; font: 800 2rem/1.1 var(--story); padding: 4px 6px 0;
+    display: inline-block; font: 800 2.3rem/1.1 var(--story); padding: 4px 8px 0;
     background: linear-gradient(100deg, #ee6a3c 0%, #f0c35a 22%, #7fb069 42%, #4f86c6 62%, #9b6cc4 80%, #e8607a 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    -webkit-text-stroke: 1.6px #2b1d12; paint-order: stroke fill;
-    filter: url(#rough) drop-shadow(2px 3px 0 #2b1d12);
+    -webkit-text-stroke: 2px #2b1d12; paint-order: stroke fill;
+    filter: url(#roughText) drop-shadow(2px 3px 0 #2b1d12);
     transform: rotate(-2deg); transition: transform .3s var(--ease);
 }
 .mark:hover span { transform: rotate(1deg) scale(1.05); }
 .mark i { font: 800 2rem/1 var(--story); color: #f0c35a; -webkit-text-stroke: 1.6px #2b1d12; transform: rotate(-2deg); display: inline-block; }
-.invite strong { display: inline-block; font-size: 1.35rem; background: linear-gradient(100deg, #f0c35a, #f6ecd6 50%, #f0c35a); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 1.2px #2b1d12; paint-order: stroke fill; filter: url(#rough) drop-shadow(1px 2px 0 #2b1d12); }
+.invite strong { display: inline-block; font-size: 1.35rem; background: linear-gradient(100deg, #f0c35a, #f6ecd6 50%, #f0c35a); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 1.2px #2b1d12; paint-order: stroke fill; filter: url(#roughText) drop-shadow(1px 2px 0 #2b1d12); }
