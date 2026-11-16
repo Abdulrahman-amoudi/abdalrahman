@@ -157,7 +157,6 @@ async function paintCover(back) {
         y += size * (ar ? 1.3 : 1.04);
     }
     ctx.font = '400 34px "Readex Pro"'; ctx.fillStyle = 'rgba(244,236,220,.75)';
-    ctx.fillText(t(UI.coverSub), HW / 2, y + 6);
     return c;
 }
 function half(canvas, right) {
@@ -174,16 +173,16 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = PCFSoftShadowMap;
 renderer.outputColorSpace = SRGBColorSpace;
 renderer.toneMapping = ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = .82;   // night: match the painted backdrop
 
 const scene = new Scene();
 renderer.setClearColor(0x000000, 0);
 const camera = new PerspectiveCamera(30, 1, .05, 50);
 camera.up.set(0, 1, 0);
 
-scene.add(new AmbientLight('#c9d4ff', .95));                 // cool night fill
+scene.add(new AmbientLight('#aebcf0', .8));                 // cool night fill
 const moon = new DirectionalLight('#9fb4ff', .45); moon.position.set(-2, 3, 3); scene.add(moon);
-const sun = new DirectionalLight('#ffd9a8', 2.6);               // warm lantern light from the right
+const sun = new DirectionalLight('#ffcf94', 2.5);               // warm lantern light from the right
 sun.position.set(2.2, 1.4, 3.6);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
