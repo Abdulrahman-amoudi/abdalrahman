@@ -126,8 +126,15 @@ body:not(.is-open) .hint { visibility: hidden; }
 @keyframes flicker { 0%, 100% { opacity: 1; } 31% { opacity: .78; } 33% { opacity: 1; } 62% { opacity: .88; } 64% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
 .lang.painted { position: absolute; }
-/* the name, painted like the buttons: a hand-cut paper label */
-.mark.painted { --c: #f3e6c8; padding: 10px 22px 7px; margin-top: -4px; color: #2b241b; text-shadow: none; font-size: 1.4rem; }
-.mark.painted::before { border-radius: 26px 18px 28px 20px / 20px 28px 18px 26px; }
-.mark.painted i { color: #c0472a; }
-.invite strong { display: inline-block; color: #fbf1da; font-size: 1.25rem; text-shadow: 2px 2px 0 #3a2a1c, -1px -1px 0 #3a2a1c, 1px -1px 0 #3a2a1c, -1px 1px 0 #3a2a1c; filter: url(#rough); }
+/* the name: its own hand-lettering, painted in the book's colours with an ink outline */
+.mark span {
+    display: inline-block; font: 800 2rem/1.1 var(--story); padding: 4px 6px 0;
+    background: linear-gradient(100deg, #ee6a3c 0%, #f0c35a 22%, #7fb069 42%, #4f86c6 62%, #9b6cc4 80%, #e8607a 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    -webkit-text-stroke: 1.6px #2b1d12; paint-order: stroke fill;
+    filter: url(#rough) drop-shadow(2px 3px 0 #2b1d12);
+    transform: rotate(-2deg); transition: transform .3s var(--ease);
+}
+.mark:hover span { transform: rotate(1deg) scale(1.05); }
+.mark i { font: 800 2rem/1 var(--story); color: #f0c35a; -webkit-text-stroke: 1.6px #2b1d12; transform: rotate(-2deg); display: inline-block; }
+.invite strong { display: inline-block; font-size: 1.35rem; background: linear-gradient(100deg, #f0c35a, #f6ecd6 50%, #f0c35a); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 1.2px #2b1d12; paint-order: stroke fill; filter: url(#rough) drop-shadow(1px 2px 0 #2b1d12); }

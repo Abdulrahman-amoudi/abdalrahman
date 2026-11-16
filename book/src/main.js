@@ -148,24 +148,51 @@ async function paintCover(back) {
     // cloth grain over everything, so art and board read as one cover
     for (let k = 0; k < 3200; k++) { ctx.fillStyle = `rgba(255,255,255,${Math.random() * .025})`; ctx.fillRect(Math.random() * HW, Math.random() * SH, 1 + Math.random() * 3, 1); }
     if (back) return c;
+    // warm lamp wash so the cover reads lit, like the pages inside
+    { const g = ctx.createRadialGradient(HW * .55, SH * .55, 40, HW * .55, SH * .55, HW * .85);
+      g.addColorStop(0, 'rgba(255,214,150,.22)'); g.addColorStop(1, 'rgba(255,214,150,0)');
+      ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.fillRect(0, 0, HW, SH); ctx.globalCompositeOperation = 'source-over'; }
     const ar = lang() === 'ar';
-    ctx.textAlign = 'center'; ctx.direction = ar ? 'rtl' : 'ltr';
-    const top = SH * .085;
-    ctx.font = '700 34px "Readex Pro"'; ctx.fillStyle = '#e9e1cf';
-    const brand = t(UI.brand), bw = ctx.measureText(brand).width;
-    ctx.fillText(brand, HW / 2, top);
-    ctx.fillStyle = '#ff7a2f'; ctx.fillText('.', HW / 2 + bw / 2 + 10, top);
-    const lines = t(UI.coverLines);
-    const size = ar ? 104 : 112;
-    ctx.font = `700 ${size}px "Readex Pro"`;
-    let y = SH * .2;
+    // a hand-painted paper ribbon above the arch carries the title
+    const rx = HW * .08, rw = HW * .84, ry = SH * .075, rh = SH * .205, notch = 34;
+    const wob = (v, a) => v + (Math.random() - .5) * a;
+    const ribbon = () => {
+        ctx.beginPath();
+        ctx.moveTo(wob(rx, 3), wob(ry, 3));
+        for (let k = 1; k <= 12; k++) ctx.lineTo(rx + rw * k / 12, wob(ry + Math.sin(k / 12 * Math.PI) * -6, 3));
+        ctx.lineTo(rx + rw - notch, ry + rh / 2);
+        ctx.lineTo(wob(rx + rw, 3), wob(ry + rh, 3));
+        for (let k = 11; k >= 0; k--) ctx.lineTo(rx + rw * k / 12, wob(ry + rh + Math.sin(k / 12 * Math.PI) * -6, 3));
+        ctx.lineTo(rx + notch, ry + rh / 2);
+        ctx.closePath();
+    };
+    ctx.save(); ctx.translate(6, 10); ribbon(); ctx.fillStyle = 'rgba(10,20,14,.45)'; ctx.fill(); ctx.restore();
+    ribbon();
+    const rg = ctx.createLinearGradient(0, ry, 0, ry + rh);
+    rg.addColorStop(0, '#f8ecd0'); rg.addColorStop(1, '#e6d3a8');
+    ctx.fillStyle = rg; ctx.fill();
+    ctx.save(); ctx.clip();
+    for (let k = 0; k < 260; k++) { ctx.fillStyle = `rgba(150,110,60,${Math.random() * .07})`; ctx.beginPath(); ctx.ellipse(rx + Math.random() * rw, ry + Math.random() * rh, 10 + Math.random() * 30, 2 + Math.random() * 6, Math.random() * 3, 0, 7); ctx.fill(); }
+    ctx.restore();
+    ctx.lineWidth = 5; ctx.strokeStyle = '#3a2a1c'; ctx.lineJoin = 'round'; ribbon(); ctx.stroke();
+    // title, lettered in the storybook face, shrunk to sit inside the ribbon
+    ctx.textAlign = 'center'; ctx.direction = ar ? 'rtl' : 'ltr'; ctx.textBaseline = 'middle';
+    const lines = t(UI.coverLines), maxW = rw - notch * 2 - 50;
+    let size = ar ? 88 : 92;
+    const fit = () => { ctx.font = `800 ${size}px "Baloo Bhaijaan 2", "Readex Pro"`; return Math.max(...lines.map(l => ctx.measureText(l).width)); };
+    while (fit() > maxW && size > 40) size -= 2;
+    const lh = size * (ar ? 1.05 : .98);
+    let y = ry + rh / 2 - lh * (lines.length - 1) / 2 + size * .06;
     for (const line of lines) {
-        ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 8;
-        ctx.fillStyle = '#c9bfa8'; ctx.fillText(line, HW / 2, y + 4); ctx.restore();
-        ctx.fillStyle = '#f4ecdc'; ctx.fillText(line, HW / 2, y);
-        y += size * (ar ? 1.3 : 1.04);
+        ctx.fillStyle = '#c0472a'; ctx.fillText(line, HW / 2 + 3, y + 4);
+        ctx.fillStyle = '#2b241b'; ctx.fillText(line, HW / 2, y);
+        y += lh;
     }
-    ctx.font = '400 34px "Readex Pro"'; ctx.fillStyle = 'rgba(244,236,220,.75)';
+    ctx.textBaseline = 'alphabetic';
+    // a small painted star seal under the ribbon
+    ctx.fillStyle = '#e8b65a'; ctx.beginPath();
+    for (let k = 0; k < 10; k++) { const r = k % 2 ? 9 : 22, a = k / 10 * Math.PI * 2 - Math.PI / 2; ctx.lineTo(HW / 2 + Math.cos(a) * r, ry + rh + 34 + Math.sin(a) * r); }
+    ctx.fill(); ctx.lineWidth = 3; ctx.stroke();
     return c;
 }
 function half(canvas, right) {
@@ -182,7 +209,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = PCFSoftShadowMap;
 renderer.outputColorSpace = SRGBColorSpace;
 renderer.toneMapping = ACESFilmicToneMapping;
-renderer.toneMappingExposure = .82;   // night: match the painted backdrop
+renderer.toneMappingExposure = .95;   // night: match the painted backdrop
 
 const scene = new Scene();
 renderer.setClearColor(0x000000, 0);
@@ -234,7 +261,7 @@ const edgeTex = (() => {
     const t = new CanvasTexture(c); t.colorSpace = SRGBColorSpace; t.wrapS = t.wrapT = RepeatWrapping; return t;
 })();
 const paperEdge = new MeshStandardMaterial({ color: '#ffffff', map: edgeTex, roughness: 1 });
-const boardMat = new MeshStandardMaterial({ color: '#1f3c30', roughness: 1 });
+const boardMat = new MeshStandardMaterial({ color: '#2c5442', roughness: 1 });
 const spineMat = new MeshStandardMaterial({ color: '#b98a45', roughness: .9 });
 // back board under the right stack, front board travels with the cover (sheet 0)
 const backBoard = new Mesh(new RoundedBoxGeometry(PW + .03, PH + .04, .016, 3, .007), boardMat);
@@ -303,7 +330,7 @@ let painting = null;
 async function paintAll() {
     textInCanvas = innerWidth > 760;
     await Promise.all([
-        document.fonts.load('700 100px "Readex Pro"', 'Aa'), document.fonts.load('400 40px "Readex Pro"', 'Aa'),
+        document.fonts.load('800 90px "Baloo Bhaijaan 2"', 'Aa'), document.fonts.load('800 90px "Baloo Bhaijaan 2"', 'عربي'), document.fonts.load('700 100px "Readex Pro"', 'Aa'), document.fonts.load('400 40px "Readex Pro"', 'Aa'),
         document.fonts.load('700 100px "Readex Pro"', 'عربي'), document.fonts.load('400 40px "Readex Pro"', 'عربي'),
     ]).catch(() => {});
     const spreads = await Promise.all(PAGES.map((p, i) => paintSpread(p, i)));
