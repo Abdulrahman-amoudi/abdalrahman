@@ -193,11 +193,11 @@ scene.add(sun);
 scene.add(sun.target);
 
 // the floor only catches the book's shadow; the painted scene behind is a flat CSS backdrop, so it stays sharp
-const desk = new Mesh(new PlaneGeometry(24, 24), new ShadowMaterial({ opacity: .5 }));
+const desk = new Mesh(new PlaneGeometry(24, 24), new ShadowMaterial({ opacity: .6 }));
 const contact = (() => {
     const c = document.createElement('canvas'); c.width = 256; c.height = 256;
     const g = c.getContext('2d'), r = g.createRadialGradient(128, 128, 10, 128, 128, 128);
-    r.addColorStop(0, 'rgba(10,8,6,.75)'); r.addColorStop(.55, 'rgba(10,8,6,.35)'); r.addColorStop(1, 'rgba(10,8,6,0)');
+    r.addColorStop(0, 'rgba(6,5,4,.9)'); r.addColorStop(.5, 'rgba(6,5,4,.5)'); r.addColorStop(1, 'rgba(10,8,6,0)');
     g.fillStyle = r; g.fillRect(0, 0, 256, 256);
     const tex = new CanvasTexture(c);
     const m = new Mesh(new PlaneGeometry(PW * 1.5, PH * 1.35), new MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
