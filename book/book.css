@@ -38,7 +38,8 @@ button, a { font: inherit; color: inherit; }
 body > :not(main):not(script) { position: relative; z-index: 2; }
 .stage { pointer-events: none; }
 #scene { pointer-events: auto; }
-.stage .invite { pointer-events: auto; }
+.stage .invite { pointer-events: auto; z-index: 3; }
+.stage .reading { position: relative; z-index: 3; }
 body.ready #scene { opacity: 1; }
 body.is-open #scene { cursor: grab; }
 body.is-open #scene:active { cursor: grabbing; }
