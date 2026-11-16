@@ -140,12 +140,10 @@ async function paintCover(back) {
     const ar = lang() === 'ar';
     ctx.textAlign = 'center'; ctx.direction = ar ? 'rtl' : 'ltr';
     const top = SH * .085;
-    const abud = await loadImage('/assets/img/abud.png');
     ctx.font = '700 34px "Readex Pro"'; ctx.fillStyle = '#e9e1cf';
     const brand = t(UI.brand), bw = ctx.measureText(brand).width;
-    if (abud) { ctx.imageSmoothingEnabled = false; ctx.drawImage(abud, HW / 2 - bw / 2 - 34, top - 32, 20, 39); }
-    ctx.fillText(brand, HW / 2 + 10, top);
-    ctx.fillStyle = '#ff7a2f'; ctx.fillText('.', HW / 2 + 10 + bw / 2 + 10, top);
+    ctx.fillText(brand, HW / 2, top);
+    ctx.fillStyle = '#ff7a2f'; ctx.fillText('.', HW / 2 + bw / 2 + 10, top);
     const lines = t(UI.coverLines);
     const size = ar ? 104 : 112;
     ctx.font = `700 ${size}px "Readex Pro"`;
@@ -337,7 +335,7 @@ function layout() {
     camera.position.set(0, -Math.sin(tilt) * d, Math.cos(tilt) * d);
     camera.lookAt(new Vector3(0, 0, 0));
     // the closed book rests low, on the rooftop floor of the painting; it rises to centre as it opens
-    if (view.W) { camera.setViewOffset(view.W, view.H, 0, -view.dy - (1 - o) * .2 * view.H, view.W, view.H); }
+    if (view.W) { camera.setViewOffset(view.W, view.H, 0, -view.dy - (1 - o) * .14 * view.H, view.W, view.H); }
 }
 
 let last = performance.now(), idle = 0;
@@ -364,7 +362,7 @@ function frame(now) {
     const moving = P !== layout.lastP;
     if (moving || needsRender || !opened) {
         // the closed book breathes on the desk
-        book.position.z = opened || reduced ? 0 : Math.sin(now / 1100) * .012 + .012;
+        book.position.z = opened ? 0 : Math.sin(now / 1100) * .012 + .012;
         const op = Math.min(1, P);
         contact.position.x = PW / 2 * (1 - op) + .03; contact.scale.set(1 + op * 1.05, 1, 1);
         layout(); renderer.render(scene, camera);
@@ -407,7 +405,7 @@ function onProgress() {
     if (p) {
         cap.innerHTML = `<h2>${esc(t(p.title))}</h2><p>${esc(t(p.body))}</p>`;
         reading.textContent = `${t(p.title)}. ${t(p.body)}`;
-        $('#actions').innerHTML = (p.links || []).map(l => `<a class="${l.ghost ? 'ghost' : ''}" href="${l.href}" ${l.href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''}>${esc(l[lang()])}</a>`).join('');
+        $('#actions').innerHTML = (p.links || []).map(l => `<a class="${l.ghost ? 'ghost' : ''}" style="${l.ghost ? '' : `--c:${p.bg};--t:${p.ink}`}" href="${l.href}" ${l.href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''}>${esc(l[lang()])}</a>`).join('');
     }
 }
 function go(i) {
@@ -497,3 +495,20 @@ paintAll().then(() => {
 });
 requestAnimationFrame(frame);
 
+
+/* ------------------------------------------------------------- the night is alive */
+{
+    const alive = $('#alive');
+    const add = (cls, css) => { const d = document.createElement('i'); d.className = cls; Object.assign(d.style, css); alive.appendChild(d); };
+    for (let k = 0; k < 46; k++) add('star', { left: Math.random() * 100 + '%', top: Math.random() * 34 + '%', '--d': (2.5 + Math.random() * 4).toFixed(2) + 's', animationDelay: (-Math.random() * 6).toFixed(2) + 's', '--s': (1 + Math.random() * 1.8).toFixed(1) + 'px' });
+    for (let k = 0; k < 12; k++) add('fly', { left: 8 + Math.random() * 84 + '%', top: 40 + Math.random() * 50 + '%', '--d': (9 + Math.random() * 10).toFixed(1) + 's', animationDelay: (-Math.random() * 18).toFixed(1) + 's', '--x': (Math.random() * 120 - 60).toFixed(0) + 'px', '--y': (-40 - Math.random() * 90).toFixed(0) + 'px' });
+    // the backdrop leans a little with the pointer
+    let tx = 0, ty = 0, cx = 0, cy = 0;
+    addEventListener('pointermove', e => { tx = e.clientX / innerWidth - .5; ty = e.clientY / innerHeight - .5; }, { passive: true });
+    const root = document.documentElement;
+    (function drift() {
+        cx += (tx - cx) * .05; cy += (ty - cy) * .05;
+        root.style.setProperty('--mx', cx.toFixed(4)); root.style.setProperty('--my', cy.toFixed(4));
+        requestAnimationFrame(drift);
+    })();
+}
