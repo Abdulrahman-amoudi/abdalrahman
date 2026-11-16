@@ -480,7 +480,7 @@ function frame(now) {
         // the closed book breathes on the desk
         book.position.z = opened ? 0 : Math.sin(now / 1100) * .012 + .012;
         // arrival: the book rises gently into place the first time it is shown
-        const ik = intro ? Math.min(1, (now - intro) / 1300) : 0;
+        const ik = intro ? Math.min(1, (now - intro) / 1300) : 1;
         book.position.y = -(1 - easeInOut(ik)) * .35;
         if (intro && ik >= 1) intro = 0;
         const op = Math.min(1, P);
