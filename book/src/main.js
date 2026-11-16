@@ -136,21 +136,33 @@ async function paintCover(back) {
     const c = document.createElement('canvas'); c.width = HW; c.height = SH;
     const ctx = c.getContext('2d');
     // his painted cover, used as is; English gets its own lettering on the same ribbon
-    const front = back ? null : await loadImage('/book/art/cover-front.webp');
+    const front = back ? null : await loadImage('/book/art/cover-front.webp?v=2');
     if (front) {
         ctx.drawImage(front, 0, 0, HW, SH);
-        if (lang() !== 'ar') {
-            const g = ctx.createRadialGradient(HW / 2, 205, 40, HW / 2, 205, 360);
-            g.addColorStop(0, 'rgba(240,226,196,1)'); g.addColorStop(.8, 'rgba(240,226,196,1)'); g.addColorStop(1, 'rgba(240,226,196,0)');
-            ctx.save(); ctx.beginPath(); ctx.roundRect(170, 108, HW - 340, 205, 30); ctx.clip();
-            ctx.fillStyle = g; ctx.fillRect(0, 0, HW, SH);
-            for (let k = 0; k < 220; k++) { ctx.fillStyle = `rgba(170,140,95,${Math.random() * .06})`; ctx.beginPath(); ctx.ellipse(170 + Math.random() * (HW - 340), 108 + Math.random() * 205, 8 + Math.random() * 26, 2 + Math.random() * 5, Math.random() * 3, 0, 7); ctx.fill(); }
+        if (lang() === 'ar') {
+            // Arabic: a fresh painted ribbon over the English one, same arc and colours
+            const x0 = 100, x1 = HW - 100, yTop = 140, h = 150, arc = 26, notch = 40;
+            const path = () => {
+                ctx.beginPath();
+                for (let k = 0; k <= 24; k++) { const u = k / 24, x = x0 + (x1 - x0) * u; ctx.lineTo(x + (Math.random() - .5) * 2, yTop + arc * (1 - Math.sin(u * Math.PI)) + (Math.random() - .5) * 2); }
+                ctx.lineTo(x1 - notch, yTop + arc + h / 2);
+                for (let k = 24; k >= 0; k--) { const u = k / 24, x = x0 + (x1 - x0) * u; ctx.lineTo(x + (Math.random() - .5) * 2, yTop + h + arc * (1 - Math.sin(u * Math.PI)) + (Math.random() - .5) * 2); }
+                ctx.lineTo(x0 + notch, yTop + arc + h / 2);
+                ctx.closePath();
+            };
+            ctx.save(); ctx.translate(4, 8); path(); ctx.fillStyle = 'rgba(10,22,14,.35)'; ctx.fill(); ctx.restore();
+            path();
+            const g = ctx.createLinearGradient(0, yTop, 0, yTop + h + arc);
+            g.addColorStop(0, '#f1e4c6'); g.addColorStop(1, '#ddc9a0');
+            ctx.fillStyle = g; ctx.fill();
+            ctx.save(); ctx.clip();
+            for (let k = 0; k < 240; k++) { ctx.fillStyle = `rgba(150,115,70,${Math.random() * .07})`; ctx.beginPath(); ctx.ellipse(x0 + Math.random() * (x1 - x0), yTop + Math.random() * (h + arc), 10 + Math.random() * 28, 2 + Math.random() * 5, Math.random() * 3, 0, 7); ctx.fill(); }
             ctx.restore();
-            const lines = t(UI.coverLines);
-            let size = 88; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            do { ctx.font = `800 ${size}px "Baloo Bhaijaan 2", "Readex Pro"`; size -= 2; } while (Math.max(...lines.map(l => ctx.measureText(l).width)) > 600 && size > 40);
-            ctx.fillStyle = '#3a2a20';
-            lines.forEach((l, i) => ctx.fillText(l, HW / 2, 210 + (i - (lines.length - 1) / 2) * size * 1.02));
+            ctx.lineWidth = 4; ctx.strokeStyle = '#5a4430'; ctx.lineJoin = 'round'; path(); ctx.stroke();
+            const line = t(UI.coverLines).join(' ');
+            let size = 84; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
+            do { ctx.font = `800 ${size}px "Baloo Bhaijaan 2", "Readex Pro"`; size -= 2; } while (ctx.measureText(line).width > (x1 - x0) - notch * 2 - 60 && size > 40);
+            ctx.fillStyle = '#2b1d12'; ctx.fillText(line, HW / 2, yTop + h / 2 + 4);
             ctx.textBaseline = 'alphabetic';
         }
         return c;
@@ -296,7 +308,7 @@ const edgeTex = (() => {
     const t = new CanvasTexture(c); t.colorSpace = SRGBColorSpace; t.wrapS = t.wrapT = RepeatWrapping; return t;
 })();
 const paperEdge = new MeshStandardMaterial({ color: '#ffffff', map: edgeTex, roughness: 1 });
-const boardMat = new MeshStandardMaterial({ color: '#2c5442', roughness: 1 });
+const boardMat = new MeshStandardMaterial({ color: '#2a4433', roughness: 1 });
 const spineMat = new MeshStandardMaterial({ color: '#b98a45', roughness: .9 });
 // back board under the right stack, front board travels with the cover (sheet 0)
 const backBoard = new Mesh(new RoundedBoxGeometry(PW + .03, PH + .04, .016, 3, .007), boardMat);
@@ -419,7 +431,7 @@ function layout() {
     const dist = Math.max(fitH / 2 / Math.tan(vfov / 2), fitW / 2 / (Math.tan(vfov / 2) * aspect));
     const closedDist = dist * 1.7;
     const d = closedDist + (dist - closedDist) * o;
-    const tilt = 0;                                  // straight on, like a painted book standing against the wall
+    const tilt = (1 - o) * .32;                      // nearly straight on, low enough to see the page block, like the painting
     camera.position.set(0, -Math.sin(tilt) * d, Math.cos(tilt) * d);
     camera.lookAt(new Vector3(0, 0, 0));
     // the closed book rests low, on the rooftop floor of the painting; it rises to centre as it opens
