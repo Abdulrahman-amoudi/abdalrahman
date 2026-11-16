@@ -8,7 +8,11 @@
 
 :root { --font: 'Readex Pro', system-ui, sans-serif; --accent: #ff7a2f; --ink: #f3efe6; --ink-2: #9c9a96; --ease: cubic-bezier(.2, .8, .2, 1); }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: #0b0b0c; }
+html, body { margin: 0; height: 100%; background: #10201b; }
+body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: url(/book/art/night.webp) center 100% / cover no-repeat, #10201b; }
+body::after { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 55%, transparent 45%, rgba(6,12,10,.55) 100%); }
 body {
     min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto auto; overflow: hidden;
     color: var(--ink); font: 400 15px/1.55 var(--font); -webkit-font-smoothing: antialiased;
@@ -25,8 +29,8 @@ button, a { font: inherit; color: inherit; }
 .lang:hover { color: var(--ink); }
 
 .stage { position: relative; min-height: 0; }
-#scene { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 0; display: block; cursor: pointer; touch-action: pan-y; opacity: 0; transition: opacity .8s var(--ease); }
-body > :not(main):not(script) { position: relative; z-index: 1; }
+#scene { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 1; display: block; cursor: pointer; touch-action: pan-y; opacity: 0; transition: opacity .8s var(--ease); }
+body > :not(main):not(script) { position: relative; z-index: 2; }
 .stage { pointer-events: none; }
 #scene { pointer-events: auto; }
 .stage .invite { pointer-events: auto; }

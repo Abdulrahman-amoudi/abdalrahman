@@ -5,7 +5,7 @@
    Build: npx esbuild book/src/main.js --bundle --minify --format=esm --outfile=book/book.js */
 import {
     WebGLRenderer, Scene, PerspectiveCamera, Group, Mesh, PlaneGeometry, BoxGeometry,
-    MeshStandardMaterial, CanvasTexture, SRGBColorSpace, DirectionalLight, AmbientLight,
+    MeshStandardMaterial, MeshBasicMaterial, AdditiveBlending, ShadowMaterial, CanvasTexture, SRGBColorSpace, DirectionalLight, AmbientLight,
     PCFSoftShadowMap, FrontSide, BackSide, Color, Vector3, ACESFilmicToneMapping, RepeatWrapping,
 } from 'three';
 import { PAGES, UI } from './content.js';
@@ -24,7 +24,7 @@ const N = PAGES.length;             // spreads; sheets = N + 1 (front cover is s
 const SW = 2048, SH = Math.round(SW * 9.4 / 16), HW = SW / 2;
 const PW = 1, PH = SH / HW;         // one page is 1 unit wide
 const D = 0.0055;                   // sheet spacing in the stack
-const SEG = 36;
+const SEG = 72;
 
 /* ------------------------------------------------------------- the painter */
 let textInCanvas = innerWidth > 760;
@@ -168,7 +168,7 @@ function half(canvas, right) {
 
 /* ------------------------------------------------------------------ scene */
 const canvas = $('#scene');
-const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = PCFSoftShadowMap;
@@ -177,51 +177,43 @@ renderer.toneMapping = ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
 
 const scene = new Scene();
-scene.background = new Color('#0b0b0c');
+renderer.setClearColor(0x000000, 0);
 const camera = new PerspectiveCamera(30, 1, .05, 50);
 camera.up.set(0, 1, 0);
 
-scene.add(new AmbientLight('#ffffff', 1.25));
-const sun = new DirectionalLight('#fff4e6', 2.2);
-sun.position.set(-1.6, -1.2, 4.2);
+scene.add(new AmbientLight('#c9d4ff', .95));                 // cool night fill
+const moon = new DirectionalLight('#9fb4ff', .45); moon.position.set(-2, 3, 3); scene.add(moon);
+const sun = new DirectionalLight('#ffd9a8', 2.6);               // warm lantern light from the right
+sun.position.set(2.2, 1.4, 3.6);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 Object.assign(sun.shadow.camera, { left: -2.5, right: 2.5, top: 2.5, bottom: -2.5, near: .5, far: 10 });
-sun.shadow.radius = 6; sun.shadow.bias = -0.0008;
+sun.shadow.radius = 10; sun.shadow.blurSamples = 16; sun.shadow.bias = -0.0008;
 scene.add(sun);
 scene.add(sun.target);
 
-// the desk: dark wood with long diagonal brush strokes
-function deskTexture() {
-    const c = document.createElement('canvas'); c.width = c.height = 1024;
-    const ctx = c.getContext('2d');
-    ctx.fillStyle = '#121213'; ctx.fillRect(0, 0, 1024, 1024);
-    ctx.save(); ctx.translate(512, 512); ctx.rotate(-0.95); ctx.translate(-900, -900);
-    for (let k = 0; k < 900; k++) {
-        const y = Math.random() * 1800, w = 2 + Math.random() * 26, l = 200 + Math.random() * 1400, x = Math.random() * 1800 - 200;
-        ctx.fillStyle = Math.random() < .55 ? `rgba(255,255,255,${.008 + Math.random() * .03})` : `rgba(0,0,0,${.15 + Math.random() * .35})`;
-        ctx.fillRect(x, y, l, w);
-    }
-    ctx.restore();
-    const tex = new CanvasTexture(c); tex.colorSpace = SRGBColorSpace; tex.wrapS = tex.wrapT = RepeatWrapping; tex.repeat.set(3, 3);
-    return tex;
-}
-const desk = new Mesh(new PlaneGeometry(24, 24), new MeshStandardMaterial({ map: deskTexture(), roughness: .92, metalness: 0 }));
+// the floor only catches the book's shadow; the painted scene behind is a flat CSS backdrop, so it stays sharp
+const desk = new Mesh(new PlaneGeometry(24, 24), new ShadowMaterial({ opacity: .5 }));
+const contact = (() => {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 256;
+    const g = c.getContext('2d'), r = g.createRadialGradient(128, 128, 10, 128, 128, 128);
+    r.addColorStop(0, 'rgba(10,8,6,.75)'); r.addColorStop(.55, 'rgba(10,8,6,.35)'); r.addColorStop(1, 'rgba(10,8,6,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 256, 256);
+    const tex = new CanvasTexture(c);
+    const m = new Mesh(new PlaneGeometry(PW * 1.5, PH * 1.35), new MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+    m.position.z = .0008; scene.add(m); return m;
+})();
+// warm light pool on the stone around the book
+const glow = (() => {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 256;
+    const g = c.getContext('2d'), r = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+    r.addColorStop(0, 'rgba(255,190,120,.32)'); r.addColorStop(1, 'rgba(255,190,120,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 256, 256);
+    const m = new Mesh(new PlaneGeometry(PW * 4.5, PH * 3), new MeshBasicMaterial({ map: new CanvasTexture(c), transparent: true, depthWrite: false, blending: AdditiveBlending }));
+    m.position.set(PW * .3, .1, .0004); scene.add(m); return m;
+})();
 desk.receiveShadow = true;
 scene.add(desk);
-// the painted desk sits on top, wide enough to fill every view of the book
-loadImage('/book/art/desk.webp').then(img => {
-    if (!img) return;
-    const tex = new CanvasTexture((() => { const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; c.getContext('2d').drawImage(img, 0, 0); return c; })());
-    tex.colorSpace = SRGBColorSpace; tex.anisotropy = 8;
-    const W = 7.2, H = W * img.height / img.width;
-    const top = new Mesh(new PlaneGeometry(W, H), new MeshStandardMaterial({ map: tex, roughness: .95, metalness: 0 }));
-    top.position.set(0, .2, .0005); top.receiveShadow = true;
-    scene.add(top);
-    scene.background = new Color('#17110d');
-    desk.material.color = new Color('#3a2a20');
-    needsRender = true;
-});
 
 const book = new Group();
 scene.add(book);
@@ -308,7 +300,8 @@ async function paintAll() {
 }
 
 /* -------------------------------------------------------------- motion */
-let P = 0, V = 0, target = 0, dragging = false, needsRender = true, opened = false, opening = null;
+let turn = null; let P = 0, V = 0, target = 0, dragging = false, needsRender = true, opened = false, opening = null;
+const easeInOutSine = x => -(Math.cos(Math.PI * x) - 1) / 2;
 const easeInOut = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 const smooth = x => x * x * (3 - 2 * x);
 
@@ -350,9 +343,13 @@ function frame(now) {
     const dt = Math.min(.05, (now - last) / 1000); last = now;
     if (opening) {
         // the first open is a planned move, not a spring: the cover swings while the camera glides over
-        const k = Math.min(1, (now - opening) / 1800);
+        const k = Math.min(1, (now - opening) / 2400);
         P = easeInOut(k); V = 0;
         if (k >= 1) { opening = null; P = target = 1; }
+    } else if (turn && !dragging) {
+        const k = Math.min(1, (now - turn.t0) / turn.dur);
+        P = turn.from + (turn.to - turn.from) * easeInOutSine(k); V = 0;
+        if (k >= 1) { P = target = turn.to; turn = null; }
     } else if (!dragging) {
         {
             // critically damped spring toward the target page
@@ -366,6 +363,8 @@ function frame(now) {
     if (moving || needsRender || !opened) {
         // the closed book breathes on the desk
         book.position.z = opened || reduced ? 0 : Math.sin(now / 1100) * .012 + .012;
+        const op = Math.min(1, P);
+        contact.position.x = PW / 2 * (1 - op) + .03; contact.scale.set(1 + op * 1.05, 1, 1);
         layout(); renderer.render(scene, camera);
         layout.lastP = P; needsRender = false; idle = 0;
         onProgress();
@@ -408,7 +407,12 @@ function onProgress() {
         $('#actions').innerHTML = (p.links || []).map(l => `<a class="${l.ghost ? 'ghost' : ''}" href="${l.href}" ${l.href.startsWith('http') ? 'target="_blank" rel="noopener"' : ''}>${esc(l[lang()])}</a>`).join('');
     }
 }
-function go(i) { target = Math.max(1, Math.min(N, i)); }
+function go(i) {
+    target = Math.max(1, Math.min(N, i));
+    if (opening || dragging || target === P) return;
+    const span = Math.abs(target - P);
+    turn = { from: P, to: target, t0: performance.now(), dur: Math.min(2200, 1150 + 260 * (span - 1)) };
+}
 function renderUI() {
     document.querySelectorAll('[data-t]').forEach(el => { const s = UI[el.dataset.t]; if (s) el.textContent = s[lang()]; });
     $('#lang').textContent = lang() === 'ar' ? 'English' : 'العربية';
@@ -446,7 +450,7 @@ addEventListener('keydown', e => {
 let sx = 0, sP = 0, lastX = 0, lastT = 0, vel = 0, moved = false;
 canvas.addEventListener('pointerdown', e => {
     if (!opened) { open(); return; }
-    dragging = true; moved = false; sx = lastX = e.clientX; sP = P; lastT = performance.now(); vel = 0;
+    turn = null; dragging = true; moved = false; sx = lastX = e.clientX; sP = P; lastT = performance.now(); vel = 0;
     canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener('pointermove', e => {
